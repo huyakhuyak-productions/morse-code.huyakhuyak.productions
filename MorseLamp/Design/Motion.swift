@@ -12,15 +12,19 @@ extension Animation {
 /// Under Reduce Motion the offset is dropped and only opacity animates.
 struct CrossfadeText: View {
     let runs: [HomeSummary.Run]
+    /// When set, normal runs use the Medium face and bold runs the SemiBold face at this size.
+    let size: CGFloat?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(_ runs: [HomeSummary.Run]) {
+    init(_ runs: [HomeSummary.Run], size: CGFloat) {
         self.runs = runs
+        self.size = size
     }
 
     init(_ text: String) {
         self.runs = [HomeSummary.Run(text: text, isBold: false)]
+        self.size = nil
     }
 
     private var key: String { runs.map(\.text).joined() }
@@ -47,7 +51,12 @@ struct CrossfadeText: View {
 
     private var styled: Text {
         runs.reduce(Text(verbatim: "")) { partial, run in
-            let next = run.isBold ? Text(run.text).fontWeight(.semibold) : Text(run.text)
+            var next = Text(run.text)
+            if let size {
+                next = next.font(run.isBold ? LampFont.title(size) : LampFont.body(size))
+            } else if run.isBold {
+                next = next.fontWeight(.semibold)
+            }
             return Text("\(partial)\(next)")
         }
     }

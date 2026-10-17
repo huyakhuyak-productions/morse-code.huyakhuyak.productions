@@ -12,6 +12,8 @@ final class AppModel {
     var state: AppState
     let store: any StateStore
     let launch: LaunchConfiguration
+    /// The real engine, or the silent one under `--silent-audio`.
+    let tone: any Tone
     let lamp = LampState()
     /// Seeded when launched with `--rng-seed`, so drills replay the same prompts.
     @ObservationIgnored var rng: any RandomNumberGenerator
@@ -21,6 +23,8 @@ final class AppModel {
     init(store: any StateStore, launch: LaunchConfiguration) {
         self.store = store
         self.launch = launch
+        let lamp = self.lamp
+        tone = launch.silentAudio ? SilentTone(lamp: lamp) : ToneEngine(lamp: lamp, pitchHz: Settings().pitchHz)
         if let seed = launch.rngSeed {
             rng = SeededGenerator(seed: seed)
         } else {

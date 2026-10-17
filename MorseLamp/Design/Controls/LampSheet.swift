@@ -4,21 +4,26 @@ import SwiftUI
 struct LampSheet<Content: View>: View {
     @Binding var isPresented: Bool
     let title: String
+    let titleFont: Font
+    let titleTracking: CGFloat
     let content: Content
 
     @AccessibilityFocusState private var titleFocused: Bool
     @Environment(\.palette) private var palette
 
-    init(isPresented: Binding<Bool>, title: String, @ViewBuilder content: () -> Content) {
+    init(isPresented: Binding<Bool>, title: String, titleFont: Font = LampFont.title(22), titleTracking: CGFloat = 0, @ViewBuilder content: () -> Content) {
         self._isPresented = isPresented
         self.title = title
+        self.titleFont = titleFont
+        self.titleTracking = titleTracking
         self.content = content()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             CrossfadeText(title)
-                .font(LampFont.title(22))
+                .font(titleFont)
+                .tracking(titleTracking)
                 .foregroundStyle(palette.fg)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityFocused($titleFocused)
@@ -67,6 +72,11 @@ private struct LampPresenter<Sheet: View>: ViewModifier {
 }
 
 extension View {
+    /// Presents any Lamp-style sheet view over this one, behind the shared scrim.
+    func lampPresentation<S: View>(isPresented: Binding<Bool>, @ViewBuilder sheet: @escaping () -> S) -> some View {
+        modifier(LampPresenter(isPresented: isPresented, sheet: sheet))
+    }
+
     func lampSheet<C: View>(isPresented: Binding<Bool>, title: String, @ViewBuilder content: @escaping () -> C) -> some View {
         modifier(LampPresenter(isPresented: isPresented) {
             LampSheet(isPresented: isPresented, title: title, content: content)
