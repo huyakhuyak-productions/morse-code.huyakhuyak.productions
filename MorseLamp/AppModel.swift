@@ -2,7 +2,7 @@ import MorseCore
 import Observation
 import os
 
-enum LampLog {
+nonisolated enum LampLog {
     static let subsystem = "productions.huyakhuyak.morselamp"
 }
 

@@ -4,15 +4,15 @@ import Synchronization
 import os
 
 /// The sound of the key and of played characters, plus the lamp that follows it.
-protocol Tone: AnyObject, Sendable {
+nonisolated protocol Tone: AnyObject, Sendable {
     /// Configures the audio session and engine and starts observing interruptions and routes.
     @MainActor func start() async
-    /// Closes the gate, stops the engine and clears the lamp.
+    /// Closes the gate, ends any playback, stops the engine and clears the lamp.
     @MainActor func stop()
     /// Opens the gate. Safe from the touch handler; the lamp lights on the main actor.
     func keyDown()
     func keyUp()
-    /// Plays one character and returns when it has finished or the task was cancelled.
+    /// Plays one character and returns when it has finished, was stopped, or the task was cancelled.
     /// The lamp follows each element while it sounds.
     @MainActor func play(_ schedule: PlaybackSchedule) async
     @MainActor func setPitch(_ hz: Double)
@@ -20,8 +20,10 @@ protocol Tone: AnyObject, Sendable {
 
 /// A sine at the configured pitch with 5 ms attack and release, gated by an atomic flag that
 /// the key flips and a frame-indexed schedule that playback installs.
-final class ToneEngine: Tone {
+nonisolated final class ToneEngine: Tone {
     /// Everything the render callback touches: atomics only, plus a try-lock around the schedule.
+    /// The audio thread owns `phase`, `gain`, `playhead` and `renderedGeneration`; the main
+    /// thread only ever replaces the schedule and bumps `generation`.
     private final class Renderer: Sendable {
         struct Span: Sendable {
             let start: Int
@@ -32,6 +34,7 @@ final class ToneEngine: Tone {
         struct FrameSchedule: Sendable {
             let spans: [Span]
             let total: Int
+            let generation: Int
         }
 
         static let amplitude: Float = 0.5
@@ -40,30 +43,37 @@ final class ToneEngine: Tone {
         let gate = Atomic<Bool>(false)
         let pitchHz = Atomic<Double>(600)
         let sampleRate = Atomic<Double>(48_000)
-        /// Render-thread state, kept in atomics so the callback owns no mutable captures.
         let phase = Atomic<Double>(0)
         let gain = Atomic<Double>(0)
-        /// Frame position inside the installed schedule, or -1 when nothing is playing.
+        /// Frame position inside the schedule being rendered, or -1 when nothing is playing.
         let playhead = Atomic<Int>(-1)
+        /// Generation of the schedule the render thread is currently playing.
+        let renderedGeneration = Atomic<Int>(0)
         /// Index of the element sounding right now, or -1.
         let elementIndex = Atomic<Int>(-1)
-        let finished = Atomic<Bool>(false)
+        /// Bumped by every install; `play` waits until `finishedGeneration` reaches its own.
+        let generation = Atomic<Int>(0)
+        let finishedGeneration = Atomic<Int>(0)
         let schedule = Mutex<FrameSchedule?>(nil)
+        /// Number of render callbacks served, for the live-engine test.
+        let renderCount = Atomic<Int>(0)
 
-        func install(_ schedule: FrameSchedule) {
-            self.schedule.withLock { $0 = schedule }
-            finished.store(false, ordering: .relaxed)
-            elementIndex.store(-1, ordering: .relaxed)
-            playhead.store(0, ordering: .releasing)
+        /// Installs a schedule and returns its generation.
+        func install(spans: [Span], total: Int) -> Int {
+            let next = generation.wrappingAdd(1, ordering: .relaxed).newValue
+            schedule.withLock { $0 = FrameSchedule(spans: spans, total: total, generation: next) }
+            return next
         }
 
+        /// Removes the schedule and marks every installed generation finished.
         func clearSchedule() {
-            playhead.store(-1, ordering: .relaxed)
-            elementIndex.store(-1, ordering: .relaxed)
             schedule.withLock { $0 = nil }
+            finishedGeneration.store(generation.load(ordering: .relaxed), ordering: .releasing)
+            elementIndex.store(-1, ordering: .relaxed)
         }
 
         func render(frameCount: AVAudioFrameCount, into abl: UnsafeMutablePointer<AudioBufferList>) -> OSStatus {
+            renderCount.wrappingAdd(1, ordering: .relaxed)
             let buffers = UnsafeMutableAudioBufferListPointer(abl)
             let rate = sampleRate.load(ordering: .relaxed)
             let step = 2 * Double.pi * pitchHz.load(ordering: .relaxed) / rate
@@ -71,20 +81,32 @@ final class ToneEngine: Tone {
             let keyed = gate.load(ordering: .acquiring)
             var phase = self.phase.load(ordering: .relaxed)
             var gain = self.gain.load(ordering: .relaxed)
-            var head = playhead.load(ordering: .acquiring)
-            // A try-lock keeps the audio thread from ever blocking; a block rendered while the
-            // schedule is being installed is simply silent.
-            let installed: FrameSchedule? = head >= 0 ? schedule.withLockIfAvailable { $0 } ?? nil : nil
+            var head = playhead.load(ordering: .relaxed)
+            // A try-lock keeps the audio thread from ever blocking; a block rendered while a
+            // schedule is being installed simply keeps the previous state for one buffer.
+            let slot = schedule.withLockIfAvailable { $0 }
+            var installed: FrameSchedule? = nil
+            if let slot {
+                installed = slot
+                if let slot {
+                    if slot.generation != renderedGeneration.load(ordering: .relaxed) {
+                        renderedGeneration.store(slot.generation, ordering: .relaxed)
+                        head = 0
+                    }
+                } else {
+                    head = -1
+                }
+            }
             var index = -1
 
             for frame in 0..<Int(frameCount) {
                 var scheduledOn = false
-                if head >= 0, let installed {
-                    if head >= installed.total {
+                if head >= 0, let current = installed {
+                    if head >= current.total {
                         head = -1
-                        finished.store(true, ordering: .releasing)
+                        finishedGeneration.store(current.generation, ordering: .releasing)
                     } else {
-                        for span in installed.spans where span.start <= head && head < span.end {
+                        for span in current.spans where span.start <= head && head < span.end {
                             scheduledOn = true
                             index = span.index
                             break
@@ -105,9 +127,16 @@ final class ToneEngine: Tone {
 
             self.phase.store(phase, ordering: .relaxed)
             self.gain.store(gain, ordering: .relaxed)
-            playhead.store(head, ordering: .releasing)
+            playhead.store(head, ordering: .relaxed)
             elementIndex.store(index, ordering: .releasing)
             return noErr
+        }
+
+        /// The render callback. Built here, outside any actor, so it carries no isolation.
+        static func renderBlock(for renderer: Renderer) -> AVAudioSourceNodeRenderBlock {
+            { @Sendable _, _, frameCount, abl in
+                renderer.render(frameCount: frameCount, into: abl)
+            }
         }
     }
 
@@ -130,10 +159,13 @@ final class ToneEngine: Tone {
     /// Called on an audio interruption, after playback has been cut.
     @MainActor var onInterruption: (@MainActor () -> Void)?
 
-    init(lamp: LampState, pitchHz: Double) {
+    @MainActor init(lamp: LampState, pitchHz: Double) {
         self.lamp = lamp
         renderer.pitchHz.store(pitchHz, ordering: .relaxed)
     }
+
+    /// How many times the render callback has run.
+    var liveRenderCount: Int { renderer.renderCount.load(ordering: .relaxed) }
 
     /// The element sounding right now, as seen by the render thread.
     var currentElementIndex: Int? {
@@ -188,14 +220,21 @@ final class ToneEngine: Tone {
     }
 
     @MainActor func play(_ schedule: PlaybackSchedule) async {
-        self.schedule(schedule)
+        guard engine.isRunning else { return }
+        let generation = self.schedule(schedule)
+        let clock = ContinuousClock()
+        // The render thread normally ends playback; the deadline covers an engine that stalls.
+        let deadline = clock.now + .seconds(schedule.duration) + .milliseconds(500)
         defer {
-            renderer.clearSchedule()
             lamp.litElementIndex = nil
             lamp.isLit = renderer.gate.load(ordering: .relaxed)
         }
         while !Task.isCancelled {
-            if renderer.finished.load(ordering: .acquiring) { return }
+            if renderer.finishedGeneration.load(ordering: .acquiring) >= generation { return }
+            if clock.now >= deadline {
+                renderer.clearSchedule()
+                return
+            }
             let index = currentElementIndex
             if lamp.litElementIndex != index { lamp.litElementIndex = index }
             let lit = index != nil
@@ -203,9 +242,11 @@ final class ToneEngine: Tone {
             do {
                 try await Task.sleep(for: .milliseconds(4))
             } catch {
+                renderer.clearSchedule()
                 return
             }
         }
+        renderer.clearSchedule()
     }
 
     @MainActor func setPitch(_ hz: Double) {
@@ -223,13 +264,14 @@ final class ToneEngine: Tone {
         try engine.start()
     }
 
-    /// Installs a schedule without the lamp polling that `play` adds.
-    @MainActor func schedule(_ schedule: PlaybackSchedule) {
+    /// Installs a schedule without the lamp polling that `play` adds. Returns its generation.
+    @MainActor @discardableResult
+    func schedule(_ schedule: PlaybackSchedule) -> Int {
         let rate = renderer.sampleRate.load(ordering: .relaxed)
         let spans = schedule.segments.map {
             Renderer.Span(start: Int(($0.start * rate).rounded()), end: Int(($0.end * rate).rounded()), index: $0.elementIndex)
         }
-        renderer.install(Renderer.FrameSchedule(spans: spans, total: Int((schedule.duration * rate).rounded())))
+        return renderer.install(spans: spans, total: Int((schedule.duration * rate).rounded()))
     }
 
     /// Renders `frames` through the real callback, in offline mode only.
@@ -273,10 +315,7 @@ final class ToneEngine: Tone {
             engine.detach(source)
         }
         renderer.sampleRate.store(format.sampleRate, ordering: .relaxed)
-        let renderer = self.renderer
-        let node = AVAudioSourceNode(format: format) { _, _, frameCount, abl in
-            renderer.render(frameCount: frameCount, into: abl)
-        }
+        let node = AVAudioSourceNode(format: format, renderBlock: Renderer.renderBlock(for: renderer))
         engine.attach(node)
         engine.connect(node, to: engine.mainMixerNode, format: format)
         engine.connect(engine.mainMixerNode, to: engine.outputNode, format: nil)
@@ -309,7 +348,6 @@ final class ToneEngine: Tone {
         case .began:
             renderer.gate.store(false, ordering: .releasing)
             renderer.clearSchedule()
-            renderer.finished.store(true, ordering: .releasing)
             lamp.isLit = false
             lamp.litElementIndex = nil
             onInterruption?()
@@ -348,7 +386,7 @@ final class ToneEngine: Tone {
 }
 
 /// Drives the lamp on the schedule's timeline without an audio engine. Used with `--silent-audio`.
-final class SilentTone: Tone {
+nonisolated final class SilentTone: Tone {
     private let lamp: LampState
     private let keyed = Atomic<Bool>(false)
 
