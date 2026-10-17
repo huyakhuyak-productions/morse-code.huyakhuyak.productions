@@ -4,6 +4,7 @@ import SwiftUI
 /// The reference sheet for one cell: the glyph, its code, both skill lines, a play ring and Practice.
 /// For the next cell: the glyph and "Unlocks when your set is solid".
 struct CharacterSheet: View {
+    @State private var startedPractice = false
     @Binding var isPresented: Bool
     let character: Character
     let onPractice: (Character) -> Void
@@ -32,6 +33,7 @@ struct CharacterSheet: View {
                 .font(LampFont.body(15, relativeTo: .subheadline))
                 .foregroundStyle(palette.fgDim)
                 PrimaryButton("Practice \(character)") {
+                    startedPractice = true
                     isPresented = false
                     onPractice(character)
                 }
@@ -41,7 +43,9 @@ struct CharacterSheet: View {
                     .foregroundStyle(palette.fgDim)
             }
         }
-        .onDisappear { model.tone.stop() }
+        // The sheet slides out after the practice drill has already started the shared engine, so
+        // only a plain dismissal stops it; the drill owns it from here.
+        .onDisappear { if !startedPractice { model.tone.stop() } }
     }
 
     private func play(_ code: Code) {
