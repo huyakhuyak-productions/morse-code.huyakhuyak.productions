@@ -26,13 +26,17 @@ struct MorseLampApp: App {
 
 /// Resolves the palette from the effective appearance once, for every screen below.
 private struct RootView: View {
+    @Environment(AppModel.self) private var model
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
             LitBackground()
             NavigationStack {
-                ContentView()
+                switch model.launch.screen {
+                case "controls": ControlsGallery()
+                default: ContentView()
+                }
             }
         }
         .environment(\.palette, Palette.resolve(colorScheme))

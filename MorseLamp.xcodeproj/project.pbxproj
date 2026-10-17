@@ -19,11 +19,19 @@
 			remoteGlobalIDString = 0691800C308372C5001E0922;
 			remoteInfo = MorseLamp;
 		};
+		06918025308372C7001E0922 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 06918005308372C5001E0922 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0691800C308372C5001E0922;
+			remoteInfo = MorseLamp;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0691800D308372C5001E0922 /* MorseLamp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MorseLamp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0691801A308372C7001E0922 /* MorseLampTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MorseLampTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		06918024308372C7001E0922 /* MorseLampUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MorseLampUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -35,6 +43,11 @@
 		0691801D308372C7001E0922 /* MorseLampTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MorseLampTests;
+			sourceTree = "<group>";
+		};
+		06918027308372C7001E0922 /* MorseLampUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MorseLampUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -56,6 +69,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		06918021308372C7001E0922 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06B88BF930837AB700F45859 /* MorseCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -64,6 +85,7 @@
 			children = (
 				0691800F308372C5001E0922 /* MorseLamp */,
 				0691801D308372C7001E0922 /* MorseLampTests */,
+				06918027308372C7001E0922 /* MorseLampUITests */,
 				06B88BF730837AB700F45859 /* Frameworks */,
 				0691800E308372C5001E0922 /* Products */,
 			);
@@ -74,6 +96,7 @@
 			children = (
 				0691800D308372C5001E0922 /* MorseLamp.app */,
 				0691801A308372C7001E0922 /* MorseLampTests.xctest */,
+				06918024308372C7001E0922 /* MorseLampUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -135,6 +158,29 @@
 			productReference = 0691801A308372C7001E0922 /* MorseLampTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		06918023308372C7001E0922 /* MorseLampUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 06918034308372C7001E0922 /* Build configuration list for PBXNativeTarget "MorseLampUITests" */;
+			buildPhases = (
+				06918020308372C7001E0922 /* Sources */,
+				06918021308372C7001E0922 /* Frameworks */,
+				06918022308372C7001E0922 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				06918026308372C7001E0922 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				06918027308372C7001E0922 /* MorseLampUITests */,
+			);
+			name = MorseLampUITests;
+			packageProductDependencies = (
+			);
+			productName = MorseLampUITests;
+			productReference = 06918024308372C7001E0922 /* MorseLampUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -149,6 +195,10 @@
 						CreatedOnToolsVersion = 26.6;
 					};
 					06918019308372C7001E0922 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 0691800C308372C5001E0922;
+					};
+					06918023308372C7001E0922 = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 0691800C308372C5001E0922;
 					};
@@ -173,6 +223,7 @@
 			targets = (
 				0691800C308372C5001E0922 /* MorseLamp */,
 				06918019308372C7001E0922 /* MorseLampTests */,
+				06918023308372C7001E0922 /* MorseLampUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -186,6 +237,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		06918018308372C7001E0922 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		06918022308372C7001E0922 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -209,6 +267,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		06918020308372C7001E0922 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -216,6 +281,11 @@
 			isa = PBXTargetDependency;
 			target = 0691800C308372C5001E0922 /* MorseLamp */;
 			targetProxy = 0691801B308372C7001E0922 /* PBXContainerItemProxy */;
+		};
+		06918026308372C7001E0922 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0691800C308372C5001E0922 /* MorseLamp */;
+			targetProxy = 06918025308372C7001E0922 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -443,6 +513,27 @@
 			};
 			name = Debug;
 		};
+		06918035308372C7001E0922 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = N3Q2P5QY22;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = productions.huyakhuyak.MorseLampUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = MorseLamp;
+			};
+			name = Debug;
+		};
 		06918033308372C7001E0922 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -462,6 +553,27 @@
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MorseLamp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MorseLamp";
+			};
+			name = Release;
+		};
+		06918036308372C7001E0922 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = N3Q2P5QY22;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = productions.huyakhuyak.MorseLampUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = MorseLamp;
 			};
 			name = Release;
 		};
@@ -491,6 +603,15 @@
 			buildConfigurations = (
 				06918032308372C7001E0922 /* Debug */,
 				06918033308372C7001E0922 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		06918034308372C7001E0922 /* Build configuration list for PBXNativeTarget "MorseLampUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06918035308372C7001E0922 /* Debug */,
+				06918036308372C7001E0922 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

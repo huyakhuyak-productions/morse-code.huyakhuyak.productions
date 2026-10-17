@@ -11,6 +11,7 @@ enum LampLog {
 final class AppModel {
     var state: AppState
     let store: any StateStore
+    let launch: LaunchConfiguration
     let lamp = LampState()
     /// Seeded when launched with `--rng-seed`, so drills replay the same prompts.
     @ObservationIgnored var rng: any RandomNumberGenerator
@@ -19,6 +20,7 @@ final class AppModel {
 
     init(store: any StateStore, launch: LaunchConfiguration) {
         self.store = store
+        self.launch = launch
         if let seed = launch.rngSeed {
             rng = SeededGenerator(seed: seed)
         } else {
