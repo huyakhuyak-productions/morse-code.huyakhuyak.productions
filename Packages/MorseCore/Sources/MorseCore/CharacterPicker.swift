@@ -17,9 +17,12 @@ public struct SeededGenerator: RandomNumberGenerator, Sendable {
 
 /// Which character to drill next, which answers to offer, which distractors to show.
 public enum CharacterPicker {
+    /// Attempts in a skill after which the newest character stops being favoured.
+    public static let newestSeasoningAttempts = 20
+
     /// The newest character weighs 8 until it has 20 attempts in the skill; others weigh 4 − level (minimum 1).
     public static func weight(of character: Character, in progress: LearnerProgress, skill: Skill) -> Int {
-        if character == progress.newest && progress.record(character, skill).total < LearnerProgress.setFloor {
+        if character == progress.newest && progress.record(character, skill).total < newestSeasoningAttempts {
             return 8
         }
         return max(1, 4 - progress.level(of: character, in: skill).rawValue)

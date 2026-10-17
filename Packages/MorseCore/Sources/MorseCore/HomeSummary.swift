@@ -25,7 +25,10 @@ public struct HomeSummary: Sendable, Equatable {
     public init(progress: LearnerProgress) {
         let total = Morse.kochOrder.count
         let mastered = "\(progress.masteredCount) mastered."
-        if !progress.hasLoggedAttempts {
+        if progress.isComplete {
+            kind = .complete
+            runs = [Run(text: "All \(total)", isBold: true), Run(text: " unlocked, \(mastered)", isBold: false)]
+        } else if !progress.hasLoggedAttempts {
             let unlocked = progress.unlocked
             let first = String(unlocked[0]), second = String(unlocked[1])
             let next = progress.next.map(String.init) ?? ""
@@ -35,9 +38,6 @@ public struct HomeSummary: Sendable, Equatable {
                 Run(text: " and ", isBold: false), Run(text: second, isBold: true),
                 Run(text: ". Key them until they stick, and \(next) unlocks.", isBold: false),
             ]
-        } else if progress.isComplete {
-            kind = .complete
-            runs = [Run(text: "All \(total)", isBold: true), Run(text: " unlocked, \(mastered)", isBold: false)]
         } else {
             let head = Run(text: "\(progress.unlockedCount) of \(total)", isBold: true)
             let slipping = progress.slipping

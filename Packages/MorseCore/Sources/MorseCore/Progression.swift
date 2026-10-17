@@ -181,7 +181,10 @@ public struct LearnerProgress: Sendable, Equatable, Codable {
     }
 
     /// Logs one attempt. A correct answer that makes the set solid flags the pending unlock.
+    /// Only unlocked characters can be drilled, so anything else is ignored rather than
+    /// inflating the set-wide accuracy.
     public mutating func log(_ character: Character, _ skill: Skill, correct: Bool) {
+        guard unlocked.contains(character) else { return }
         var rec = record(character, skill)
         rec.append(correct)
         records[Self.key(character, skill)] = rec
