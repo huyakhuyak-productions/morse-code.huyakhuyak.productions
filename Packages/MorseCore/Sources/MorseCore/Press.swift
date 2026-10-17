@@ -5,9 +5,10 @@ public struct Press: Sendable, Equatable, Codable {
     public let down: TimeInterval
     public let up: TimeInterval
 
+    /// A release timestamped before its press counts as a zero-length press.
     public init(down: TimeInterval, up: TimeInterval) {
         self.down = down
-        self.up = up
+        self.up = max(up, down)
     }
 
     public var duration: TimeInterval { up - down }
@@ -50,15 +51,17 @@ public struct DitEstimator: Sendable, Equatable, Codable {
     /// Dots shorter than 1.5 dits contribute their length; dashes contribute a third of theirs.
     /// Only matched characters are learned from, so a drifting estimate cannot ratchet upward.
     public mutating func learn(presses: [Press], elements: [Element]) {
+        let reference = dit   // one threshold for the whole character
         for (press, element) in zip(presses, elements) {
             let sample: TimeInterval
             switch element {
             case .dot:
-                guard press.duration < 1.5 * dit else { continue }
+                guard press.duration < 1.5 * reference else { continue }
                 sample = press.duration
             case .dash:
                 sample = press.duration / 3
             }
+            guard sample > 0 else { continue }
             dit = Self.clamp(0.7 * dit + 0.3 * sample)
         }
     }

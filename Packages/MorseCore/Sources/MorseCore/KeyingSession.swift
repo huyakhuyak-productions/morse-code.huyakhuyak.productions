@@ -14,7 +14,10 @@ public struct KeyingSession: Sendable, Equatable {
         self.estimator = estimator
     }
 
+    /// Starts a press. A second finger landing while one is already down is ignored,
+    /// so the press keeps the first touch's start time.
     public mutating func keyDown(at t: TimeInterval) {
+        guard !isKeyDown else { return }
         downAt = t
         isKeyDown = true
     }

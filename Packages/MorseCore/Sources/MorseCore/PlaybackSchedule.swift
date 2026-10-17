@@ -16,9 +16,9 @@ public struct PlaybackSchedule: Sendable, Equatable {
     /// End of the last segment.
     public let duration: TimeInterval
 
-    /// PARIS timing: a unit is 1200 ms divided by words per minute.
+    /// PARIS timing: a unit is 1200 ms divided by words per minute (floored at 1 wpm).
     public static func unit(wpm: Int) -> TimeInterval {
-        1.2 / Double(wpm)
+        1.2 / Double(max(1, wpm))
     }
 
     public init(code: Code, wpm: Int) {
