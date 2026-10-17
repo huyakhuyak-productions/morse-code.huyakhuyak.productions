@@ -43,17 +43,18 @@ struct LampSlider: View {
                     .frame(width: knob, height: knob)
                     .offset(x: fraction * travel)
             }
-            .frame(height: knob)
+            .frame(height: 44)
+            .contentShape(Rectangle())
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { trackWidth = $0 }
+            // Only the track takes drags, so a scroll that starts on the title row still scrolls.
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        set(fraction: (gesture.location.x - knob / 2) / max(travel, 1))
+                        onDrag?(value)
+                    }
+            )
         }
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { gesture in
-                    set(fraction: (gesture.location.x - knob / 2) / max(travel, 1))
-                    onDrag?(value)
-                }
-        )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
         .accessibilityValue(format(value))
