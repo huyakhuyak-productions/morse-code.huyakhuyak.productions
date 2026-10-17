@@ -73,7 +73,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				06B88BF930837AB700F45859 /* MorseCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
