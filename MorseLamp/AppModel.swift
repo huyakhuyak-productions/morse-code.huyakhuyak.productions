@@ -14,9 +14,10 @@ final class AppModel {
     let launch: LaunchConfiguration
     /// The real engine, or the silent one under `--silent-audio`.
     let tone: any Tone
+    let haptics = Haptics()
     let lamp = LampState()
     /// Seeded when launched with `--rng-seed`, so drills replay the same prompts.
-    @ObservationIgnored var rng: any RandomNumberGenerator
+    @ObservationIgnored var rng: AnyRandomNumberGenerator
 
     private let logger = Logger(subsystem: LampLog.subsystem, category: "model")
 
@@ -26,9 +27,9 @@ final class AppModel {
         let lamp = self.lamp
         tone = launch.silentAudio ? SilentTone(lamp: lamp) : ToneEngine(lamp: lamp, pitchHz: Settings().pitchHz)
         if let seed = launch.rngSeed {
-            rng = SeededGenerator(seed: seed)
+            rng = AnyRandomNumberGenerator(SeededGenerator(seed: seed))
         } else {
-            rng = SystemRandomNumberGenerator()
+            rng = AnyRandomNumberGenerator(SystemRandomNumberGenerator())
         }
         if let fixture = launch.fixture.flatMap({ LaunchConfiguration.fixtures[$0] }) {
             state = fixture()
@@ -74,5 +75,18 @@ final class AppModel {
     func relearnRhythm() {
         state.estimator = DitEstimator()
         save()
+    }
+}
+
+/// Type-erased generator so the picker's `inout some RandomNumberGenerator` can take either source.
+nonisolated struct AnyRandomNumberGenerator: RandomNumberGenerator {
+    private var base: any RandomNumberGenerator
+
+    init(_ base: some RandomNumberGenerator) {
+        self.base = base
+    }
+
+    mutating func next() -> UInt64 {
+        base.next()
     }
 }
