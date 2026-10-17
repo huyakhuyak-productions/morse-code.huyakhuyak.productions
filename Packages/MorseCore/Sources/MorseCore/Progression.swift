@@ -33,14 +33,24 @@ public enum Level: Int, Sendable, Comparable, Codable {
 /// Logged attempts of one character in one skill.
 public struct SkillRecord: Sendable, Equatable, Codable {
     /// Last 20 outcomes, oldest first.
-    public var recent: [Bool] = []
+    public private(set) var recent: [Bool]
     /// Every attempt ever logged.
-    public var total: Int = 0
+    public private(set) var total: Int
 
     public init(recent: [Bool] = [], total: Int = 0) {
-        self.recent = recent
-        self.total = total
+        self.recent = recent.suffix(LearnerProgress.perSkillWindow)
+        self.total = max(total, self.recent.count)
     }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            recent: try c.decodeIfPresent([Bool].self, forKey: .recent) ?? [],
+            total: try c.decodeIfPresent(Int.self, forKey: .total) ?? 0
+        )
+    }
+
+    private enum CodingKeys: String, CodingKey { case recent, total }
 
     public var correctRecent: Int { recent.lazy.filter { $0 }.count }
 
@@ -66,6 +76,10 @@ public struct LearnerProgress: Sendable, Equatable, Codable {
     /// K and M unlocked, nothing logged.
     public static let initial = LearnerProgress()
 
+    /// Bumped when the on-disk shape changes incompatibly.
+    static let formatVersion = 1
+    static let unlockedRange = 2...Morse.kochOrder.count
+
     public private(set) var unlockedCount = 2
     /// The unlock rule became true on a logged correct answer and the reveal has not run yet.
     public private(set) var pendingUnlock = false
@@ -75,13 +89,45 @@ public struct LearnerProgress: Sendable, Equatable, Codable {
 
     private init() {}
 
+    // MARK: Codable (explicit keys; every field optional on read; values clamped)
+
+    private enum CodingKeys: String, CodingKey {
+        case version, unlockedCount, pendingUnlock, records, recentAcrossSet
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let count = try c.decodeIfPresent(Int.self, forKey: .unlockedCount) ?? 2
+        unlockedCount = min(max(count, Self.unlockedRange.lowerBound), Self.unlockedRange.upperBound)
+        pendingUnlock = try c.decodeIfPresent(Bool.self, forKey: .pendingUnlock) ?? false
+        let raw = try c.decodeIfPresent([String: SkillRecord].self, forKey: .records) ?? [:]
+        records = raw.filter { Self.isValidKey($0.key) }
+        let across = try c.decodeIfPresent([Bool].self, forKey: .recentAcrossSet) ?? []
+        recentAcrossSet = Array(across.suffix(Self.setWindow))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(Self.formatVersion, forKey: .version)
+        try c.encode(unlockedCount, forKey: .unlockedCount)
+        try c.encode(pendingUnlock, forKey: .pendingUnlock)
+        try c.encode(records, forKey: .records)
+        try c.encode(recentAcrossSet, forKey: .recentAcrossSet)
+    }
+
+    private static func isValidKey(_ key: String) -> Bool {
+        let parts = key.split(separator: "/", maxSplits: 1)
+        guard parts.count == 2, parts[0].count == 1, let c = parts[0].first else { return false }
+        return Morse.code(for: c) != nil && Skill(rawValue: String(parts[1])) != nil
+    }
+
     // MARK: Characters
 
     public var unlocked: [Character] { Array(Morse.kochOrder.prefix(unlockedCount)) }
     public var locked: [Character] { Array(Morse.kochOrder.dropFirst(unlockedCount)) }
     public var next: Character? { isComplete ? nil : Morse.kochOrder[unlockedCount] }
     public var newest: Character { Morse.kochOrder[unlockedCount - 1] }
-    public var isComplete: Bool { unlockedCount == Morse.kochOrder.count }
+    public var isComplete: Bool { unlockedCount >= Morse.kochOrder.count }
 
     // MARK: Records and levels
 

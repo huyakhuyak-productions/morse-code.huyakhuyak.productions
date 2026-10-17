@@ -21,8 +21,21 @@ public struct DitEstimator: Sendable, Equatable, Codable {
 
     public private(set) var dit: TimeInterval
 
+    /// Non-finite values fall back to the initial estimate; everything else is clamped.
     public init(dit: TimeInterval = DitEstimator.initial) {
-        self.dit = dit
+        self.dit = Self.clamp(dit)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(dit: try c.decodeIfPresent(TimeInterval.self, forKey: .dit) ?? Self.initial)
+    }
+
+    private enum CodingKeys: String, CodingKey { case dit }
+
+    private static func clamp(_ value: TimeInterval) -> TimeInterval {
+        guard value.isFinite else { return initial }
+        return min(maximum, max(minimum, value))
     }
 
     /// A press shorter than two dots is a dot; anything longer is a dash.
@@ -46,7 +59,7 @@ public struct DitEstimator: Sendable, Equatable, Codable {
             case .dash:
                 sample = press.duration / 3
             }
-            dit = min(Self.maximum, max(Self.minimum, 0.7 * dit + 0.3 * sample))
+            dit = Self.clamp(0.7 * dit + 0.3 * sample)
         }
     }
 }
