@@ -31,10 +31,12 @@ final class ListeningModel {
     private(set) var revealedCode: Code?
     private(set) var mode: Mode
     var revealPending: Character?
+    /// The pending reveal once the answer's hold has run; the view presents it from here.
+    var revealReady: Character? { phase == .hold ? revealPending : nil }
     private(set) var answerMode: AnswerMode
 
     @ObservationIgnored private let app: AppModel
-    @ObservationIgnored private let tone: any Tone
+    @ObservationIgnored let tone: any Tone
     @ObservationIgnored private let haptics: Haptics
     /// The current round's sound was heard in full; an answer to an unheard round is never scored.
     @ObservationIgnored private var heardRound = false
@@ -144,10 +146,29 @@ final class ListeningModel {
             } else {
                 try? await Task.sleep(for: Self.hold)
             }
-            guard !Task.isCancelled, self.revealPending == nil else { return }
+            guard !Task.isCancelled else { return }
+            if self.revealPending != nil {
+                // The hold is over; the view hands over to the reveal.
+                self.phase = .hold
+                return
+            }
             self.nextRound()
             await self.playRound()
         }
+    }
+
+    /// After the reveal: the guided rounds "Keep going" scheduled, or the normal rotation if none.
+    func resumeAfterReveal() async {
+        revealPending = nil
+        roundTask?.cancel()
+        roundTask = nil
+        if let guided = app.state.guided, guided.drill == .listening, guided.remaining > 0 {
+            mode = .guided(guided.character, remaining: guided.remaining)
+        } else {
+            mode = .normal
+        }
+        nextRound()
+        await playRound()
     }
 
     /// Test seam: force the answer for the round about to play.

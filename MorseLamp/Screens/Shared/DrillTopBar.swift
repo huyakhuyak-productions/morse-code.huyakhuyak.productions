@@ -4,13 +4,15 @@ import SwiftUI
 struct DrillTopBar: View {
     let unlocked: Int
     let hasNext: Bool
+    var newestAccent = false
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.palette) private var palette
 
-    init(unlocked: Int, hasNext: Bool) {
+    init(unlocked: Int, hasNext: Bool, newestAccent: Bool = false) {
         self.unlocked = unlocked
         self.hasNext = hasNext
+        self.newestAccent = newestAccent
     }
 
     var body: some View {
@@ -25,7 +27,7 @@ struct DrillTopBar: View {
             .buttonStyle(PressScale())
             .accessibilityIdentifier("back")
             .accessibilityLabel("Back")
-            TickRow(unlocked: unlocked, hasNext: hasNext)
+            TickRow(unlocked: unlocked, hasNext: hasNext, newestAccent: newestAccent)
             CrossfadeText("\(unlocked)")
                 .font(LampFont.body(15, relativeTo: .subheadline))
                 .monospacedDigit()

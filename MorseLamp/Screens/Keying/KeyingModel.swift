@@ -34,6 +34,8 @@ final class KeyingModel {
     private(set) var mode: Mode
     /// Set when a logged match makes the set solid; the view hands over to the reveal.
     var revealPending: Character?
+    /// The pending reveal once the match's hold has run; the view presents it from here.
+    var revealReady: Character? { phase == .keying ? revealPending : nil }
     private(set) var showsBluetoothNotice = false
     /// Increments on every miss; the view shakes the readout once per change.
     private(set) var shakeCount = 0
@@ -42,7 +44,7 @@ final class KeyingModel {
     var dit: TimeInterval { session.estimator.dit }
 
     @ObservationIgnored private let app: AppModel
-    @ObservationIgnored private let tone: any Tone
+    @ObservationIgnored let tone: any Tone
     @ObservationIgnored private let haptics: Haptics
     @ObservationIgnored private let now: () -> TimeInterval
     @ObservationIgnored private var session: KeyingSession
@@ -250,6 +252,18 @@ final class KeyingModel {
         // After a miss the status, like the hint, stays until the next press.
         if !hintedRetry { refreshStatus() }
         announce(String(target))
+    }
+
+    /// After the reveal: the guided rounds "Keep going" scheduled, or the normal rotation if none.
+    func resumeAfterReveal() {
+        revealPending = nil
+        hintedRetry = false
+        if let guided = app.state.guided, guided.drill == .keying, guided.remaining > 0 {
+            mode = .guided(guided.character, remaining: guided.remaining)
+        } else {
+            mode = .normal
+        }
+        nextPrompt()
     }
 
     /// Test seam: force the next target.

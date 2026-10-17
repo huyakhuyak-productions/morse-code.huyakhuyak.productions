@@ -47,12 +47,18 @@ struct CodeView: View {
     var color: Color
     /// The element currently playing; the others drop to 40 % opacity.
     var highlighted: Int? = nil
+    /// When set, the elements pop in one after another this many seconds apart (the reveal).
+    var stagger: Double? = nil
 
-    init(_ code: Code, scale: CodeScale, color: Color, highlighted: Int? = nil) {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var appeared = false
+
+    init(_ code: Code, scale: CodeScale, color: Color, highlighted: Int? = nil, stagger: Double? = nil) {
         self.code = code
         self.scale = scale
         self.color = color
         self.highlighted = highlighted
+        self.stagger = stagger
     }
 
     var body: some View {
@@ -64,11 +70,23 @@ struct CodeView: View {
                     case .dash: Dash(scale: scale, color: color)
                     }
                 }
-                .opacity(highlighted == nil || highlighted == index ? 1 : 0.4)
+                .opacity(entranceOpacity * (highlighted == nil || highlighted == index ? 1 : 0.4))
+                .scaleEffect(entranceScale * (highlighted == index && !reduceMotion ? 1.15 : 1))
+                .animation(.lamp(0.08), value: highlighted)
+                .animation(.lamp(0.2).delay(reduceMotion ? 0 : Double(index) * (stagger ?? 0)), value: appeared)
             }
         }
+        .onAppear { appeared = true }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(code.spokenDescription)
+    }
+
+    private var entranceOpacity: Double {
+        stagger == nil || appeared ? 1 : 0
+    }
+
+    private var entranceScale: CGFloat {
+        stagger == nil || appeared || reduceMotion ? 1 : 0.6
     }
 }
 
@@ -76,12 +94,15 @@ struct CodeView: View {
 struct TickRow: View {
     let unlocked: Int
     let hasNext: Bool
+    /// The reveal: the tick that just turned solid is drawn in accent.
+    var newestAccent = false
 
     @Environment(\.palette) private var palette
 
-    init(unlocked: Int, hasNext: Bool) {
+    init(unlocked: Int, hasNext: Bool, newestAccent: Bool = false) {
         self.unlocked = unlocked
         self.hasNext = hasNext
+        self.newestAccent = newestAccent
     }
 
     var body: some View {
@@ -98,7 +119,7 @@ struct TickRow: View {
     private func tick(at index: Int) -> some View {
         let shape = Capsule()
         if index < unlocked {
-            shape.fill(palette.fg).frame(width: 2, height: 10)
+            shape.fill(newestAccent && index == unlocked - 1 ? palette.accent : palette.fg).frame(width: 2, height: 10)
         } else if index == unlocked && hasNext {
             shape.strokeBorder(palette.fgDim, lineWidth: 1).frame(width: 2, height: 10)
         } else {

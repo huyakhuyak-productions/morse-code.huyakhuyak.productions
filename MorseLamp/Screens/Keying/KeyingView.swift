@@ -6,6 +6,7 @@ struct KeyingView: View {
     let practice: Character?
 
     @State private var model: KeyingModel?
+    @State private var reveal: RevealModel?
 
     @Environment(AppModel.self) private var app
     @Environment(\.palette) private var palette
@@ -14,18 +15,30 @@ struct KeyingView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        Group {
-            if let model {
+        ZStack {
+            if let model, let reveal {
+                RevealView(model: reveal) {
+                    self.reveal = nil
+                    model.resumeAfterReveal()
+                }
+                .transition(.opacity)
+            } else if let model {
                 drill(model)
+                    .transition(.opacity)
             } else {
                 Color.clear
             }
         }
+        .animation(.lamp(0.32), value: reveal == nil)
         .toolbar(.hidden, for: .navigationBar)
         .task {
             let model = self.model ?? KeyingModel(app: app, tone: app.tone, haptics: app.haptics, practice: practice)
             self.model = model
             await model.appear()
+        }
+        .onChange(of: model?.revealReady) { _, ready in
+            guard let model, ready != nil, reveal == nil else { return }
+            reveal = RevealModel(app: app, from: .keying, tone: model.tone, haptics: app.haptics)
         }
         .onDisappear { model?.disappear() }
         .onChange(of: scenePhase) { _, phase in
