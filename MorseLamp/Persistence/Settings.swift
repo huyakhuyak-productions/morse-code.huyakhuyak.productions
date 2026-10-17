@@ -32,4 +32,22 @@ nonisolated struct Settings: Codable, Equatable, Sendable {
     var theme = Theme.system
     /// Show codes on locked cells and the next cell.
     var codesOnLocked = false
+
+    init() {}
+
+    /// Every field is optional on the way in, so a file from an older build still loads.
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        strictTiming = try c.decodeIfPresent(Bool.self, forKey: .strictTiming) ?? strictTiming
+        answerMode = try c.decodeIfPresent(AnswerMode.self, forKey: .answerMode) ?? answerMode
+        wpm = try c.decodeIfPresent(Int.self, forKey: .wpm) ?? wpm
+        pitchHz = try c.decodeIfPresent(Double.self, forKey: .pitchHz) ?? pitchHz
+        haptics = try c.decodeIfPresent(Bool.self, forKey: .haptics) ?? haptics
+        theme = try c.decodeIfPresent(Theme.self, forKey: .theme) ?? theme
+        codesOnLocked = try c.decodeIfPresent(Bool.self, forKey: .codesOnLocked) ?? codesOnLocked
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case strictTiming, answerMode, wpm, pitchHz, haptics, theme, codesOnLocked
+    }
 }

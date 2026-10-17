@@ -21,17 +21,32 @@ nonisolated struct FileStateStore: StateStore {
             .appending(path: "state.json")
     }
 
+    /// Nil when nothing is saved. A file that cannot be decoded is renamed
+    /// `state.unreadable-<timestamp>.json` before the error is thrown, so the next save
+    /// never overwrites it.
     func load() throws -> AppState? {
         guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else { return nil }
         let data = try Data(contentsOf: url)
-        return try JSONDecoder().decode(AppState.self, from: data)
+        do {
+            return try JSONDecoder().decode(AppState.self, from: data)
+        } catch {
+            setAside()
+            throw error
+        }
+    }
+
+    private func setAside() {
+        let stamp = Int(Date.now.timeIntervalSince1970)
+        let base = url.deletingPathExtension().lastPathComponent
+        let aside = url.deletingLastPathComponent().appending(path: "\(base).unreadable-\(stamp).json")
+        try? FileManager.default.moveItem(at: url, to: aside)
     }
 
     func save(_ state: AppState) throws {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        try encoder.encode(state).write(to: url, options: [.atomic, .completeFileProtection])
+        try encoder.encode(state).write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     }
 }
 

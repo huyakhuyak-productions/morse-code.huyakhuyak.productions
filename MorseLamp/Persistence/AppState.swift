@@ -47,4 +47,22 @@ nonisolated struct AppState: Codable, Equatable, Sendable {
     var hasKeyed = false
     var hasListened = false
     var bluetoothNoticeShown = false
+
+    init() {}
+
+    /// Every field is optional on the way in, so a file from an older build still loads.
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        progress = try c.decodeIfPresent(LearnerProgress.self, forKey: .progress) ?? progress
+        settings = try c.decodeIfPresent(Settings.self, forKey: .settings) ?? settings
+        estimator = try c.decodeIfPresent(DitEstimator.self, forKey: .estimator) ?? estimator
+        guided = try c.decodeIfPresent(GuidedRounds.self, forKey: .guided)
+        hasKeyed = try c.decodeIfPresent(Bool.self, forKey: .hasKeyed) ?? hasKeyed
+        hasListened = try c.decodeIfPresent(Bool.self, forKey: .hasListened) ?? hasListened
+        bluetoothNoticeShown = try c.decodeIfPresent(Bool.self, forKey: .bluetoothNoticeShown) ?? bluetoothNoticeShown
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case progress, settings, estimator, guided, hasKeyed, hasListened, bluetoothNoticeShown
+    }
 }
