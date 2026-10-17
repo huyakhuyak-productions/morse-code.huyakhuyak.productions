@@ -1,0 +1,50 @@
+import MorseCore
+
+nonisolated enum Drill: String, Codable, Sendable {
+    case keying, listening
+}
+
+/// A freshly unlocked character gets a few guided rounds in the drill it was revealed in.
+nonisolated struct GuidedRounds: Codable, Equatable, Sendable {
+    var drill: Drill
+    var character: Character
+    var remaining: Int
+
+    private enum CodingKeys: String, CodingKey { case drill, character, remaining }
+
+    init(drill: Drill, character: Character, remaining: Int) {
+        self.drill = drill
+        self.character = character
+        self.remaining = remaining
+    }
+
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        drill = try c.decode(Drill.self, forKey: .drill)
+        let text = try c.decode(String.self, forKey: .character)
+        guard text.count == 1, let first = text.first else {
+            throw DecodingError.dataCorruptedError(forKey: .character, in: c, debugDescription: "Expected one character, got \(text.debugDescription)")
+        }
+        character = first
+        remaining = try c.decode(Int.self, forKey: .remaining)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(drill, forKey: .drill)
+        try c.encode(String(character), forKey: .character)
+        try c.encode(remaining, forKey: .remaining)
+    }
+}
+
+/// Everything that survives a relaunch, in one document.
+nonisolated struct AppState: Codable, Equatable, Sendable {
+    var progress = LearnerProgress.initial
+    var settings = Settings()
+    var estimator = DitEstimator()
+    var guided: GuidedRounds? = nil
+    /// The learner has submitted at least one keying attempt; the paddle hint is no longer needed.
+    var hasKeyed = false
+    var hasListened = false
+    var bluetoothNoticeShown = false
+}

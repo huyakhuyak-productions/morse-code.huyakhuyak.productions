@@ -6,7 +6,7 @@ import SwiftUI
 enum LampFont {
     static let names = (black: "Archivo-Black", semiBold: "Archivo-SemiBold", medium: "Archivo-Medium")
 
-    private static let logger = Logger(subsystem: "productions.huyakhuyak.morselamp", category: "fonts")
+    private static let logger = Logger(subsystem: LampLog.subsystem, category: "fonts")
 
     /// Drill glyphs and letter cells. Callers apply tracking of −0.05 × size.
     static func glyph(_ size: CGFloat) -> Font {
