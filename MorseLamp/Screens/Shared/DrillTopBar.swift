@@ -35,5 +35,8 @@ struct DrillTopBar: View {
                 .frame(minWidth: 24, alignment: .trailing)
         }
         .padding(.horizontal, 8)
+        // Its own container: without one, a re-render under a dismissing sheet can let the back
+        // button's accessibility node adopt the content below it and grow to the full screen.
+        .accessibilityElement(children: .contain)
     }
 }

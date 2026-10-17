@@ -37,6 +37,7 @@ final class KeyingUITests: XCTestCase {
         let display = Self.codes[target]!
         key(display)
         XCTAssertTrue(app.staticTexts["\(target)  \(display)"].waitForExistence(timeout: 3))
+        XCTAssertEqual(app.buttons["back"].frame.size, CGSize(width: 44, height: 44))
 
         // Wait for the next prompt, then key something wrong.
         let next = NSPredicate(format: "label != %@ OR exists == false", target)

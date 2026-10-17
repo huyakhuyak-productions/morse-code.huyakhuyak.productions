@@ -8,19 +8,22 @@ struct LampSlider: View {
     let step: Double
     let format: (Double) -> String
     let onDrag: ((Double) -> Void)?
+    /// Runs when the finger lifts; the pitch slider stops its tone here.
+    let onRelease: (() -> Void)?
 
     @State private var trackWidth: CGFloat = 0
     @Environment(\.palette) private var palette
 
     private let knob: CGFloat = 28
 
-    init(_ title: String, value: Binding<Double>, in range: ClosedRange<Double>, step: Double, format: @escaping (Double) -> String, onDrag: ((Double) -> Void)? = nil) {
+    init(_ title: String, value: Binding<Double>, in range: ClosedRange<Double>, step: Double, format: @escaping (Double) -> String, onDrag: ((Double) -> Void)? = nil, onRelease: (() -> Void)? = nil) {
         self.title = title
         self._value = value
         self.range = range
         self.step = step
         self.format = format
         self.onDrag = onDrag
+        self.onRelease = onRelease
     }
 
     var body: some View {
@@ -53,6 +56,7 @@ struct LampSlider: View {
                         set(fraction: (gesture.location.x - knob / 2) / max(travel, 1))
                         onDrag?(value)
                     }
+                    .onEnded { _ in onRelease?() }
             )
         }
         .accessibilityElement(children: .ignore)
