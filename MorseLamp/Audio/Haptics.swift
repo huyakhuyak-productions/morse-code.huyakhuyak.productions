@@ -10,6 +10,8 @@ final class Haptics {
     private var pressPlayer: (any CHHapticPatternPlayer)?
     private var releasePlayer: (any CHHapticPatternPlayer)?
     private var revealPlayer: (any CHHapticPatternPlayer)?
+    /// The system stops the engine when the app is suspended; the next play restarts it.
+    private var needsRestart = true
     private let logger = Logger(subsystem: LampLog.subsystem, category: "haptics")
 
     init() {
@@ -17,8 +19,12 @@ final class Haptics {
         do {
             let engine = try CHHapticEngine()
             engine.playsHapticsOnly = true
-            engine.resetHandler = { [weak self] in
-                Task { @MainActor in self?.restart() }
+            // Both handlers arrive on Core Haptics' own queue, so they are Sendable and hop to the main actor.
+            engine.resetHandler = { @Sendable [weak self] in
+                Task { @MainActor in self?.needsRestart = true }
+            }
+            engine.stoppedHandler = { @Sendable [weak self] _ in
+                Task { @MainActor in self?.needsRestart = true }
             }
             self.engine = engine
             restart()
@@ -32,10 +38,13 @@ final class Haptics {
     func reveal() { play(revealPlayer) }
 
     private func play(_ player: (any CHHapticPatternPlayer)?) {
-        guard isEnabled, let player else { return }
+        guard isEnabled, engine != nil else { return }
+        if needsRestart { restart() }
+        guard let player else { return }
         do {
             try player.start(atTime: CHHapticTimeImmediate)
         } catch {
+            needsRestart = true
             logger.error("Haptic play failed: \(error, privacy: .public)")
         }
     }
@@ -47,7 +56,9 @@ final class Haptics {
             pressPlayer = try engine.makePlayer(with: Self.transient(intensity: 0.5, sharpness: 0.6))
             releasePlayer = try engine.makePlayer(with: Self.transient(intensity: 0.35, sharpness: 0.4))
             revealPlayer = try engine.makePlayer(with: Self.transient(intensity: 0.9, sharpness: 0.3))
+            needsRestart = false
         } catch {
+            needsRestart = true
             logger.error("Haptic engine start failed: \(error, privacy: .public)")
         }
     }
