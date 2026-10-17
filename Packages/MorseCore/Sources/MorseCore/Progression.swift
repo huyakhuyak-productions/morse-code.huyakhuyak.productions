@@ -98,14 +98,25 @@ public struct Progress: Sendable, Equatable, Codable {
         Skill.allCases.map { level(of: character, in: $0) }.min() ?? .new
     }
 
+    /// True once any attempt in any skill has been logged.
+    public var hasLoggedAttempts: Bool {
+        records.values.contains { $0.total > 0 }
+    }
+
     public var masteredCount: Int {
         unlocked.lazy.filter { level(of: $0) == .mastered }.count
     }
 
-    /// Unlocked characters at or below "learning" that are not among the two newest, in grid order.
+    /// Unlocked characters that have dropped to "learning" or below, in grid order.
+    /// The two newest are exempt, and so is any character with fewer than 5 attempts in a
+    /// skill: its level is the "new" default, not a measurement, and it never was bright.
     public var slipping: [Character] {
         let exempt = Set(unlocked.suffix(2))
-        let dim = Set(unlocked.filter { !exempt.contains($0) && level(of: $0) <= .learning })
+        let dim = Set(unlocked.filter { c in
+            !exempt.contains(c)
+                && level(of: c) <= .learning
+                && Skill.allCases.allSatisfy { record(c, $0).recent.count >= 5 }
+        })
         return Morse.gridOrder.filter(dim.contains)
     }
 

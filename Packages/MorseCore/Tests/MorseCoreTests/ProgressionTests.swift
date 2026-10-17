@@ -86,6 +86,16 @@ import Testing
     #expect(p.masteredCount == 1)                   // M
 }
 
+@Test func slippingIgnoresUntrainedCharacters() {
+    var p = solidKM()
+    for _ in 0..<5 { _ = p.unlockNext() }           // R S U A P unlocked with no attempts
+    #expect(p.slipping.isEmpty)
+    for _ in 0..<4 { p.log("R", .keying, correct: false); p.log("R", .listening, correct: false) }
+    #expect(p.slipping.isEmpty)                     // 4 attempts: still not a measurement
+    p.log("R", .keying, correct: false); p.log("R", .listening, correct: false)
+    #expect(p.slipping == ["R"])
+}
+
 @Test func unlockNextReturnsNilWhenComplete() {    // Review Focus 3
     var p = Progress.initial
     for _ in 0..<34 { _ = p.unlockNext() }
