@@ -50,3 +50,18 @@ One `ToneEngine` is shared by the home sheet, both drills and Settings. Drills s
 appear and stop it on disappear; the app stops it on background and the shared
 `onBackgroundReturn` modifier restarts it. The letter sheet must not stop it when it hands
 over to the practice drill (the sheet's disappearance fires after the drill has started).
+
+## Deploying to the owner's iPhone
+
+The team's registered App ID is `productions.huyakhuyak.MorseLamp` (the template's
+capitalisation). The project's lowercase `productions.huyakhuyak.morselamp` cannot be
+registered alongside it (Apple compares App IDs case-insensitively), so a device build
+must override the id until the project or the portal is changed:
+
+```bash
+xcodebuild build -project MorseLamp.xcodeproj -scheme MorseLamp \
+  -destination 'platform=iOS,id=<device id from: xcrun devicectl list devices>' \
+  -allowProvisioningUpdates PRODUCT_BUNDLE_IDENTIFIER=productions.huyakhuyak.MorseLamp
+xcrun devicectl device install app --device <device id> <DerivedData>/Build/Products/Debug-iphoneos/MorseLamp.app
+xcrun devicectl device process launch --device <device id> productions.huyakhuyak.MorseLamp
+```
