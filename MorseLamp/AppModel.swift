@@ -63,11 +63,13 @@ final class AppModel {
         }
     }
 
-    /// Back to K and M, with the rhythm forgotten and no guided rounds pending.
+    /// Back to K and M, with the rhythm forgotten, no guided rounds pending and the first-run hints back.
     func resetProgress() {
         state.progress.reset()
         state.estimator = DitEstimator()
         state.guided = nil
+        state.hasKeyed = false
+        state.hasListened = false
         save()
     }
 

@@ -21,6 +21,10 @@ struct AppModelTests {
         #expect(m.state.progress == .initial)
         #expect(m.state.estimator == DitEstimator())
         #expect(m.state.guided == nil)
+        // The first-run hints come back too; only settings survive a reset.
+        #expect(!m.state.hasKeyed)
+        #expect(!m.state.hasListened)
+        #expect(m.state.settings.answerMode == .automatic)
         #expect(store.saved.last == m.state)
     }
 
