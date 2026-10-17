@@ -51,6 +51,7 @@ struct KeyingModelTests {
         m.nextPrompt()
         #expect(m.target == t)
         #expect(m.hint == Morse.code(for: t))
+        #expect(m.status == "\(t) is \(Morse.code(for: t)!.display)")  // stays until the next press
         key(m, code: Morse.code(for: t)!, dit: 0.1)
         #expect(m.phase == .matched)
         #expect(app.state.progress.record(t, .keying).total == 1)  // the miss was logged, the hinted retry was not

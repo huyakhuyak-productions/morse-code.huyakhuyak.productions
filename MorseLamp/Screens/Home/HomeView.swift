@@ -33,6 +33,7 @@ struct HomeView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(PressScale())
+                .accessibilityIdentifier("settings")
                 .accessibilityLabel("Settings")
             }
             CrossfadeText(summary.runs, size: 17)

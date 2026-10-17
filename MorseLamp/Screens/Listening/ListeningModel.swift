@@ -1,0 +1,212 @@
+import MorseCore
+import Observation
+import SwiftUI
+
+/// The listening drill: a character plays, the learner names it.
+@MainActor @Observable
+final class ListeningModel {
+    enum Phase: Equatable {
+        case playing
+        case awaiting
+        case right
+        case wrong(picked: Character)
+        case hold
+    }
+
+    enum Mode: Equatable {
+        case normal
+        /// The rounds after a reveal: the new character with its code shown and highlighted; never logged.
+        case guided(Character, remaining: Int)
+    }
+
+    static let hold: Duration = .milliseconds(1_100)
+    static let interruptedStatus = "Sound was interrupted. Tap the lamp to hear it again."
+
+    private(set) var answer: Character
+    /// Choices mode: `min(4, unlocked)` buttons that always include the answer.
+    private(set) var options: [Character] = []
+    private(set) var phase: Phase = .playing
+    private(set) var status = ""
+    /// Shown beneath the lamp after answering, and before answering in guided rounds.
+    private(set) var revealedCode: Code?
+    private(set) var mode: Mode
+    var revealPending: Character?
+    private(set) var answerMode: AnswerMode
+
+    @ObservationIgnored private let app: AppModel
+    @ObservationIgnored private let tone: any Tone
+    @ObservationIgnored private let haptics: Haptics
+    /// The current round's sound was heard in full; an answer to an unheard round is never scored.
+    @ObservationIgnored private var heardRound = false
+    @ObservationIgnored private var roundTask: Task<Void, Never>?
+    /// Bumped by every new round, so playback that finishes late cannot touch a later round.
+    @ObservationIgnored private var roundID = 0
+
+    init(app: AppModel, tone: any Tone, haptics: Haptics) {
+        self.app = app
+        self.tone = tone
+        self.haptics = haptics
+        answerMode = app.resolvedAnswerMode()
+        if let guided = app.state.guided, guided.drill == .listening, guided.remaining > 0 {
+            mode = .guided(guided.character, remaining: guided.remaining)
+            answer = guided.character
+        } else {
+            mode = .normal
+            if let first = app.launch.firstTarget, app.state.progress.unlocked.contains(first) {
+                answer = first
+            } else {
+                answer = CharacterPicker.pick(from: app.state.progress, skill: .listening, avoiding: nil, using: &app.rng)
+            }
+        }
+        prepareRound()
+    }
+
+    func isEnabled(_ character: Character) -> Bool {
+        app.state.progress.unlocked.contains(character)
+    }
+
+    // MARK: Lifecycle
+
+    func appear() async {
+        haptics.isEnabled = app.state.settings.haptics
+        await tone.start()
+        tone.setPitch(app.state.settings.pitchHz)
+        await playRound()
+    }
+
+    func disappear() {
+        roundTask?.cancel()
+        roundTask = nil
+        tone.stop()
+        app.save()
+    }
+
+    // MARK: Rounds
+
+    /// Plays the answer. A cut-off sound leaves the round unscored until the lamp replays it.
+    func playRound() async {
+        phase = .playing
+        let round = roundID
+        let heard = await tone.play(PlaybackSchedule(code: code, wpm: app.state.settings.wpm))
+        // An early answer may already have decided this round, or a later round may have begun.
+        guard !Task.isCancelled, round == roundID, phase == .playing else { return }
+        heardRound = heard
+        if !heard {
+            status = Self.interruptedStatus
+        } else if status == Self.interruptedStatus {
+            refreshStatus()
+        }
+        phase = .awaiting
+    }
+
+    func replay() async {
+        guard phase == .awaiting else { return }
+        await playRound()
+    }
+
+    /// Answers the round. Allowed while the character is still sounding: answering early is the
+    /// learner's choice, so that round counts as heard.
+    func pick(_ picked: Character) async {
+        guard phase == .awaiting || phase == .playing else { return }
+        if phase == .playing { heardRound = true }
+        app.state.hasListened = true
+        let correct = picked == answer
+        var isGuided = false
+        if case .guided = mode { isGuided = true }
+        let shouldLog = heardRound && !isGuided
+        revealedCode = code
+        if correct {
+            phase = .right
+            status = "\(answer)  \(code.display)"
+            if shouldLog {
+                app.state.progress.log(answer, .listening, correct: true)
+                if app.state.progress.pendingUnlock, mode == .normal {
+                    revealPending = app.state.progress.next
+                }
+            }
+            announce("\(answer), right")
+        } else {
+            phase = .wrong(picked: picked)
+            status = "It was \(answer), not \(picked)."
+            if shouldLog { app.state.progress.log(answer, .listening, correct: false) }
+            announce(status)
+        }
+        advanceMode()
+        app.save()
+        let wasWrong = !correct
+        roundTask?.cancel()
+        roundTask = Task { [weak self] in
+            guard let self else { return }
+            if wasWrong {
+                // The code replays once with the answer revealed.
+                _ = await self.tone.play(PlaybackSchedule(code: self.code, wpm: self.app.state.settings.wpm))
+                try? await Task.sleep(for: .milliseconds(400))
+            } else {
+                try? await Task.sleep(for: Self.hold)
+            }
+            guard !Task.isCancelled, self.revealPending == nil else { return }
+            self.nextRound()
+            await self.playRound()
+        }
+    }
+
+    /// Test seam: force the answer for the round about to play.
+    func setAnswer(_ character: Character) {
+        answer = character
+        prepareRound()
+    }
+
+    private func nextRound() {
+        switch mode {
+        case .guided(let character, _):
+            answer = character
+        case .normal:
+            answer = CharacterPicker.pick(from: app.state.progress, skill: .listening, avoiding: answer, using: &app.rng)
+        }
+        prepareRound()
+    }
+
+    private func prepareRound() {
+        roundID += 1
+        heardRound = false
+        options = CharacterPicker.choices(answer: answer, progress: app.state.progress, using: &app.rng)
+        if case .guided = mode {
+            if !options.contains(answer) { options = [answer] + options.dropLast() }
+            revealedCode = code
+        } else {
+            revealedCode = nil
+        }
+        phase = .playing
+        refreshStatus()
+    }
+
+    private func advanceMode() {
+        guard case .guided(let character, let remaining) = mode else { return }
+        let left = remaining - 1
+        if left > 0 {
+            mode = .guided(character, remaining: left)
+            app.state.guided = GuidedRounds(drill: .listening, character: character, remaining: left)
+        } else {
+            mode = .normal
+            app.state.guided = nil
+        }
+    }
+
+    private func refreshStatus() {
+        if !app.state.hasListened {
+            status = "Listen, then pick the letter"
+        } else if app.lamp.isMuted {
+            status = "Sound is off"
+        } else {
+            status = ""
+        }
+    }
+
+    private var code: Code {
+        Morse.code(for: answer) ?? Code(elements: [])
+    }
+
+    private func announce(_ text: String) {
+        AccessibilityNotification.Announcement(text).post()
+    }
+}

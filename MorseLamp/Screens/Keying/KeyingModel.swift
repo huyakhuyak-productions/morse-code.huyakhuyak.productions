@@ -247,7 +247,8 @@ final class KeyingModel {
                 hint = nil
             }
         }
-        refreshStatus()
+        // After a miss the status, like the hint, stays until the next press.
+        if !hintedRetry { refreshStatus() }
         announce(String(target))
     }
 

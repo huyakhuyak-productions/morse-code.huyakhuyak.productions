@@ -23,6 +23,7 @@ struct DrillTopBar: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(PressScale())
+            .accessibilityIdentifier("back")
             .accessibilityLabel("Back")
             TickRow(unlocked: unlocked, hasNext: hasNext)
             CrossfadeText("\(unlocked)")

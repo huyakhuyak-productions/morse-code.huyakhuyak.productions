@@ -20,7 +20,9 @@ struct LampDisc: View {
         if let action {
             Button(action: action) { disc }
                 .buttonStyle(PressScale())
+                .accessibilityIdentifier("lamp")
                 .accessibilityLabel("Play again")
+                .accessibilityValue(showsPlayMark ? "ready" : "playing")
         } else {
             disc.accessibilityHidden(true)
         }

@@ -13,8 +13,9 @@ nonisolated protocol Tone: AnyObject, Sendable {
     func keyDown()
     func keyUp()
     /// Plays one character and returns when it has finished, was stopped, or the task was cancelled.
-    /// The lamp follows each element while it sounds.
-    @MainActor func play(_ schedule: PlaybackSchedule) async
+    /// The lamp follows each element while it sounds. True when the whole character sounded.
+    @discardableResult
+    @MainActor func play(_ schedule: PlaybackSchedule) async -> Bool
     @MainActor func setPitch(_ hz: Double)
 }
 
@@ -219,8 +220,8 @@ nonisolated final class ToneEngine: Tone {
         light(false)
     }
 
-    @MainActor func play(_ schedule: PlaybackSchedule) async {
-        guard engine.isRunning else { return }
+    @MainActor func play(_ schedule: PlaybackSchedule) async -> Bool {
+        guard engine.isRunning else { return false }
         let generation = self.schedule(schedule)
         let clock = ContinuousClock()
         // The render thread normally ends playback; the deadline covers an engine that stalls.
@@ -230,10 +231,13 @@ nonisolated final class ToneEngine: Tone {
             lamp.isLit = renderer.gate.load(ordering: .relaxed)
         }
         while !Task.isCancelled {
-            if renderer.finishedGeneration.load(ordering: .acquiring) >= generation { return }
+            if renderer.finishedGeneration.load(ordering: .acquiring) >= generation {
+                // Finished by the render thread, or cut by stop()/an interruption, which clear the slot.
+                return renderer.schedule.withLock { $0?.generation == generation }
+            }
             if clock.now >= deadline {
                 renderer.clearSchedule()
-                return
+                return false
             }
             let index = currentElementIndex
             if lamp.litElementIndex != index { lamp.litElementIndex = index }
@@ -243,10 +247,11 @@ nonisolated final class ToneEngine: Tone {
                 try await Task.sleep(for: .milliseconds(4))
             } catch {
                 renderer.clearSchedule()
-                return
+                return false
             }
         }
         renderer.clearSchedule()
+        return false
     }
 
     @MainActor func setPitch(_ hz: Double) {
@@ -412,7 +417,7 @@ nonisolated final class SilentTone: Tone {
         light(false)
     }
 
-    @MainActor func play(_ schedule: PlaybackSchedule) async {
+    @MainActor func play(_ schedule: PlaybackSchedule) async -> Bool {
         let clock = ContinuousClock()
         let start = clock.now
         defer {
@@ -428,8 +433,9 @@ nonisolated final class SilentTone: Tone {
                 lamp.litElementIndex = nil
                 lamp.isLit = false
             }
+            return true
         } catch {
-            return
+            return false
         }
     }
 
