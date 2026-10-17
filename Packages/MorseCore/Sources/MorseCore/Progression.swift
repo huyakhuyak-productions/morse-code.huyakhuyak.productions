@@ -6,7 +6,7 @@ public enum Skill: String, Sendable, Codable, CaseIterable {
     case listening
 }
 
-/// Progress level of one character, from the accuracy of its recent attempts.
+/// LearnerProgress level of one character, from the accuracy of its recent attempts.
 public enum Level: Int, Sendable, Comparable, Codable {
     case new = 0
     case learning
@@ -52,19 +52,19 @@ public struct SkillRecord: Sendable, Equatable, Codable {
 
     mutating func append(_ correct: Bool) {
         recent.append(correct)
-        if recent.count > Progress.perSkillWindow { recent.removeFirst(recent.count - Progress.perSkillWindow) }
+        if recent.count > LearnerProgress.perSkillWindow { recent.removeFirst(recent.count - LearnerProgress.perSkillWindow) }
         total += 1
     }
 }
 
 /// Which characters are unlocked and how accurate the learner is in each.
-public struct Progress: Sendable, Equatable, Codable {
+public struct LearnerProgress: Sendable, Equatable, Codable {
     public static let perSkillWindow = 20
     public static let setWindow = 50
     public static let setFloor = 20
 
     /// K and M unlocked, nothing logged.
-    public static let initial = Progress()
+    public static let initial = LearnerProgress()
 
     public private(set) var unlockedCount = 2
     /// The unlock rule became true on a logged correct answer and the reveal has not run yet.

@@ -18,8 +18,8 @@ public struct SeededGenerator: RandomNumberGenerator, Sendable {
 /// Which character to drill next, which answers to offer, which distractors to show.
 public enum CharacterPicker {
     /// The newest character weighs 8 until it has 20 attempts in the skill; others weigh 4 − level (minimum 1).
-    public static func weight(of character: Character, in progress: Progress, skill: Skill) -> Int {
-        if character == progress.newest && progress.record(character, skill).total < Progress.setFloor {
+    public static func weight(of character: Character, in progress: LearnerProgress, skill: Skill) -> Int {
+        if character == progress.newest && progress.record(character, skill).total < LearnerProgress.setFloor {
             return 8
         }
         return max(1, 4 - progress.level(of: character, in: skill).rawValue)
@@ -27,7 +27,7 @@ public enum CharacterPicker {
 
     /// Weighted random pick from the unlocked set, avoiding `previous` when another candidate exists.
     public static func pick(
-        from progress: Progress,
+        from progress: LearnerProgress,
         skill: Skill,
         avoiding previous: Character?,
         using rng: inout some RandomNumberGenerator
@@ -48,7 +48,7 @@ public enum CharacterPicker {
     /// `min(4, unlocked)` answer buttons that always include the answer, shuffled.
     public static func choices(
         answer: Character,
-        progress: Progress,
+        progress: LearnerProgress,
         using rng: inout some RandomNumberGenerator
     ) -> [Character] {
         let count = min(4, progress.unlocked.count)
@@ -60,7 +60,7 @@ public enum CharacterPicker {
     /// know them), then the lowest-level unlocked characters when fewer than two remain locked.
     public static func distractors(
         for newCharacter: Character,
-        progress: Progress,
+        progress: LearnerProgress,
         using rng: inout some RandomNumberGenerator
     ) -> [Character] {
         var pool = progress.locked.filter { $0 != newCharacter }.shuffled(using: &rng)

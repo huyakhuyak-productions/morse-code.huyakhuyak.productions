@@ -49,7 +49,7 @@ import Testing
 }
 
 @Test func firstRunOnlyWhileNothingIsLogged() {
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     p.log("K", .keying, correct: false)
     let s = HomeSummary(progress: p)
     #expect(s.kind == .normal)

@@ -11,7 +11,7 @@ import Testing
 }
 
 @Test func weightsFollowSpec() {
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     #expect(CharacterPicker.weight(of: "M", in: p, skill: .keying) == 8)     // newest, < 20 attempts
     #expect(CharacterPicker.weight(of: "K", in: p, skill: .keying) == 4)     // level new → 4 − 0
     for _ in 0..<20 { p.log("M", .keying, correct: true); p.log("K", .keying, correct: true) }
@@ -37,7 +37,7 @@ import Testing
 @Test func choicesContainAnswerAndCapAtFour() {
     var rng = SeededGenerator(seed: 3)
     #expect(Set(CharacterPicker.choices(answer: "K", progress: .initial, using: &rng)) == ["K", "M"])
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     for _ in 0..<6 { _ = p.unlockNext() }            // 8 unlocked
     let c = CharacterPicker.choices(answer: "S", progress: p, using: &rng)
     #expect(c.count == 4)
@@ -48,7 +48,7 @@ import Testing
 
 @Test func distractorsComeFromLockedFirst() {
     var rng = SeededGenerator(seed: 4)
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     let new = p.unlockNext()!                         // R
     let d = CharacterPicker.distractors(for: new, progress: p, using: &rng)
     #expect(d.count == 2)
@@ -59,7 +59,7 @@ import Testing
 
 @Test func distractorsFillFromLowestLevelUnlockedWhenFewLocked() {
     var rng = SeededGenerator(seed: 5)
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     for _ in 0..<33 { _ = p.unlockNext() }           // 35 unlocked, 1 locked ("4")
     let new = p.unlockNext()!                         // "4", nothing locked
     let d = CharacterPicker.distractors(for: new, progress: p, using: &rng)

@@ -22,7 +22,7 @@ public struct HomeSummary: Sendable, Equatable {
 
     public var plainText: String { runs.map(\.text).joined() }
 
-    public init(progress: Progress) {
+    public init(progress: LearnerProgress) {
         let total = Morse.kochOrder.count
         let mastered = "\(progress.masteredCount) mastered."
         if !progress.hasLoggedAttempts {

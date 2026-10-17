@@ -3,7 +3,7 @@ import Testing
 @testable import MorseCore
 
 @Test func initialState() {
-    let p = Progress.initial
+    let p = LearnerProgress.initial
     #expect(p.unlocked == ["K", "M"])
     #expect(p.next == "R")
     #expect(p.newest == "M")
@@ -24,7 +24,7 @@ import Testing
 }
 
 @Test func recentWindowIsTwenty() {
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     for _ in 0..<25 { p.log("K", .keying, correct: false) }
     for _ in 0..<20 { p.log("K", .keying, correct: true) }
     #expect(p.record("K", .keying).recent.count == 20)
@@ -35,13 +35,13 @@ import Testing
 }
 
 @Test func setIsNotSolidBelowTwentyAttempts() {    // Review Focus 2
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     for _ in 0..<6 { p.log("K", .keying, correct: true); p.log("M", .keying, correct: true) }
     #expect(!p.isSetSolid)
 }
 
 @Test func unlockRuleNeedsBothSkillsAndTwentyOnNewest() {
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     for _ in 0..<20 { p.log("K", .keying, correct: true); p.log("M", .keying, correct: true) }
     #expect(!p.isSetSolid)                          // listening is still "new"
     for _ in 0..<19 { p.log("K", .listening, correct: true); p.log("M", .listening, correct: true) }
@@ -72,7 +72,7 @@ import Testing
 }
 
 @Test func pendingUnlockStaysWhileCompleteIsFalseOnly() {
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     for _ in 0..<34 { _ = p.unlockNext() }
     p.log("K", .keying, correct: true)
     #expect(!p.pendingUnlock)                       // nothing left to unlock
@@ -97,7 +97,7 @@ import Testing
 }
 
 @Test func unlockNextReturnsNilWhenComplete() {    // Review Focus 3
-    var p = Progress.initial
+    var p = LearnerProgress.initial
     for _ in 0..<34 { _ = p.unlockNext() }
     #expect(p.isComplete)
     #expect(p.next == nil)
@@ -110,11 +110,11 @@ import Testing
     var p = solidKM()
     _ = p.unlockNext()
     p.reset()
-    #expect(p == Progress.initial)
+    #expect(p == LearnerProgress.initial)
 }
 
 @Test func roundTripsThroughJSON() throws {
     let p = solidKM()
     let data = try JSONEncoder().encode(p)
-    #expect(try JSONDecoder().decode(Progress.self, from: data) == p)
+    #expect(try JSONDecoder().decode(LearnerProgress.self, from: data) == p)
 }
