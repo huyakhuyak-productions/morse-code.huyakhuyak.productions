@@ -105,14 +105,18 @@ struct KeyingView: View {
         }
     }
 
-    /// The live pattern updates instantly; every other status change crossfades.
-    @ViewBuilder
+    /// The live pattern updates instantly; every other status change crossfades, including the
+    /// hand-over between the two (first press, submit), which fades rather than cuts.
     private func statusLine(_ model: KeyingModel) -> some View {
-        if model.phase == .keying, !model.keyed.isEmpty {
-            Text(model.status)
-        } else {
-            CrossfadeText(model.status)
+        let live = model.phase == .keying && !model.keyed.isEmpty
+        return ZStack {
+            if live {
+                Text(model.status).transition(.opacity)
+            } else {
+                CrossfadeText(model.status).transition(.opacity)
+            }
         }
+        .animation(.lamp(0.2), value: live)
     }
 
     private func readoutColor(_ phase: KeyingModel.Phase) -> Color {
