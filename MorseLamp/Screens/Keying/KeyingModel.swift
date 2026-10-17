@@ -208,9 +208,8 @@ final class KeyingModel {
         case .normal:
             break
         case .practice(let character, let remaining):
-            let left = remaining - 1
-            mode = .practice(character, remaining: left)
-            if left <= 0 { didFinishPractice = true }
+            // The last result is shown through its hold like any other; `nextPrompt` ends the practice.
+            mode = .practice(character, remaining: remaining - 1)
         case .guided(let character, let remaining):
             let left = remaining - 1
             if left > 0 {
@@ -244,7 +243,11 @@ final class KeyingModel {
         presses = []
         phase = .keying
         switch mode {
-        case .practice(let character, _):
+        case .practice(let character, let remaining):
+            if remaining <= 0 {
+                didFinishPractice = true
+                return
+            }
             target = character
             if !hintedRetry { hint = nil }
         case .guided(let character, _):

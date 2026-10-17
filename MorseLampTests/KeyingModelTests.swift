@@ -118,8 +118,10 @@ struct KeyingModelTests {
     @Test func practiceAsksTenTimesThenEnds() {
         let (m, app) = makeKeying(fixture: "tenUnlocked", practice: "K")
         #expect(m.target == "K")
-        for _ in 0..<10 {
+        for round in 0..<10 {
             key(m, code: Morse.code(for: "K")!, dit: 0.1)
+            // The tenth result is shown through its hold like every other; practice ends at the next prompt.
+            #expect(!m.didFinishPractice, "round \(round)")
             m.nextPrompt()
         }
         #expect(m.didFinishPractice)
