@@ -7,6 +7,7 @@ struct HomeView: View {
 
     @State private var showingSheet = false
     @State private var sheetCharacter: Character = "K"
+    @AccessibilityFocusState private var focusedCell: Character?
 
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var palette
@@ -48,6 +49,7 @@ struct HomeView: View {
                         sheetCharacter = character
                         showingSheet = true
                     }
+                    .accessibilityFocused($focusedCell, equals: character)
                 }
             }
             Spacer(minLength: 0)
@@ -60,7 +62,9 @@ struct HomeView: View {
         .padding(.top, 8)
         .padding(.bottom, 12)
         .toolbar(.hidden, for: .navigationBar)
-        .modifier(CharacterSheetPresenter(isPresented: $showingSheet, character: sheetCharacter) { character in
+        .modifier(CharacterSheetPresenter(isPresented: $showingSheet, character: sheetCharacter, onDismiss: {
+            focusedCell = sheetCharacter
+        }) { character in
             path.append(.keying(practice: character))
         })
     }
@@ -70,10 +74,11 @@ struct HomeView: View {
 private struct CharacterSheetPresenter: ViewModifier {
     @Binding var isPresented: Bool
     let character: Character
+    let onDismiss: () -> Void
     let onPractice: (Character) -> Void
 
     func body(content: Content) -> some View {
-        content.lampPresentation(isPresented: $isPresented) {
+        content.lampPresentation(isPresented: $isPresented, onDismiss: onDismiss) {
             CharacterSheet(isPresented: $isPresented, character: character, onPractice: onPractice)
         }
     }

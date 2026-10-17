@@ -41,13 +41,19 @@ struct LampSheet<Content: View>: View {
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
         .accessibilityAction(.escape) { isPresented = false }
-        .onAppear { titleFocused = true }
+        .task {
+            // VoiceOver ignores a focus request made mid-transition; wait for the slide to land.
+            try? await Task.sleep(for: .milliseconds(350))
+            titleFocused = true
+        }
     }
 }
 
 /// Presents any sheet view over the content, behind a scrim that dismisses it.
 private struct LampPresenter<Sheet: View>: ViewModifier {
     @Binding var isPresented: Bool
+    /// Runs after dismissal; callers move VoiceOver focus back to the control that opened the sheet.
+    var onDismiss: (() -> Void)? = nil
     let sheet: () -> Sheet
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -68,23 +74,26 @@ private struct LampPresenter<Sheet: View>: ViewModifier {
             }
         }
         .animation(.lamp(0.32), value: isPresented)
+        .onChange(of: isPresented) { _, shown in
+            if !shown { onDismiss?() }
+        }
     }
 }
 
 extension View {
     /// Presents any Lamp-style sheet view over this one, behind the shared scrim.
-    func lampPresentation<S: View>(isPresented: Binding<Bool>, @ViewBuilder sheet: @escaping () -> S) -> some View {
-        modifier(LampPresenter(isPresented: isPresented, sheet: sheet))
+    func lampPresentation<S: View>(isPresented: Binding<Bool>, onDismiss: (() -> Void)? = nil, @ViewBuilder sheet: @escaping () -> S) -> some View {
+        modifier(LampPresenter(isPresented: isPresented, onDismiss: onDismiss, sheet: sheet))
     }
 
-    func lampSheet<C: View>(isPresented: Binding<Bool>, title: String, @ViewBuilder content: @escaping () -> C) -> some View {
-        modifier(LampPresenter(isPresented: isPresented) {
+    func lampSheet<C: View>(isPresented: Binding<Bool>, title: String, onDismiss: (() -> Void)? = nil, @ViewBuilder content: @escaping () -> C) -> some View {
+        modifier(LampPresenter(isPresented: isPresented, onDismiss: onDismiss) {
             LampSheet(isPresented: isPresented, title: title, content: content)
         })
     }
 
-    func confirmSheet(isPresented: Binding<Bool>, title: String, message: String, destructiveTitle: String, onConfirm: @escaping () -> Void) -> some View {
-        modifier(LampPresenter(isPresented: isPresented) {
+    func confirmSheet(isPresented: Binding<Bool>, title: String, message: String, destructiveTitle: String, onDismiss: (() -> Void)? = nil, onConfirm: @escaping () -> Void) -> some View {
+        modifier(LampPresenter(isPresented: isPresented, onDismiss: onDismiss) {
             ConfirmSheet(isPresented: isPresented, title: title, message: message, destructiveTitle: destructiveTitle, onConfirm: onConfirm)
         })
     }
