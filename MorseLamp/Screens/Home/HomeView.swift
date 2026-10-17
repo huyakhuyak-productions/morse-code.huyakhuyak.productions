@@ -23,6 +23,9 @@ struct HomeView: View {
                     Dash(scale: .hint, color: palette.fg)
                     Dash(scale: .hint, color: palette.fg)
                 }
+                // Decorative. Ignoring the children first is what actually removes the shapes'
+                // container from the tree; hidden alone left an unlabeled 56 x 8 element.
+                .accessibilityElement(children: .ignore)
                 .accessibilityHidden(true)
                 Spacer()
                 Button { path.append(.settings) } label: {
@@ -36,6 +39,8 @@ struct HomeView: View {
                 .accessibilityIdentifier("settings")
                 .accessibilityLabel("Settings")
             }
+            // Its own container, like the drill and settings headers (see DrillTopBar).
+            .accessibilityElement(children: .contain)
             CrossfadeText(summary.runs, size: 17)
                 .foregroundStyle(palette.fg)
                 .fixedSize(horizontal: false, vertical: true)

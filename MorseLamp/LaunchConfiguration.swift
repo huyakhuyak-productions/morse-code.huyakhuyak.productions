@@ -11,7 +11,7 @@ nonisolated struct LaunchConfiguration: Equatable {
     var rngSeed: UInt64? = nil
     /// Drive the lamp without the audio engine.
     var silentAudio = false
-    /// Open straight on a screen: "keying", "listening", "settings", "gallery".
+    /// Open straight on a screen: "home" (the default), "keying", "listening", "settings", "controls" (the control gallery).
     var screen: String? = nil
     /// Force the first drill prompt.
     var firstTarget: Character? = nil

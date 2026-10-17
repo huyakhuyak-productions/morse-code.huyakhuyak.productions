@@ -113,6 +113,7 @@ struct TickRow: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(unlocked) of \(Morse.kochOrder.count) unlocked")
+        .accessibilityAddTraits(.isStaticText)
     }
 
     @ViewBuilder

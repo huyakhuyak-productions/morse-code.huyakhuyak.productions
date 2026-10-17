@@ -33,6 +33,7 @@ struct DrillTopBar: View {
                 .monospacedDigit()
                 .foregroundStyle(palette.fgDim)
                 .frame(minWidth: 24, alignment: .trailing)
+                .accessibilityHidden(true)  // the tick row already says "7 of 36 unlocked"
         }
         .padding(.horizontal, 8)
         // Its own container: without one, a re-render under a dismissing sheet can let the back

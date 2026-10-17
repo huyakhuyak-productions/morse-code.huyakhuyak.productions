@@ -36,6 +36,17 @@ struct AnswerCell: View {
         .disabled(!enabled)
         .animation(.lamp(0.2), value: state)
         .accessibilityLabel(label)
+        .accessibilityValue(accessibilityValue)
+        .accessibilityAddTraits(state == .picked ? [.isSelected] : [])
+    }
+
+    private var accessibilityValue: String {
+        switch state {
+        case .plain: ""
+        case .picked: "right"
+        case .wrongPick: "wrong"
+        case .answer: "the answer"
+        }
     }
 
     private var fill: Color {
