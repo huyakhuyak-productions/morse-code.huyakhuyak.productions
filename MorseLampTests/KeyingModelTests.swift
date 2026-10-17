@@ -163,4 +163,19 @@ struct KeyingModelTests {
         #expect(app.state.progress.record(target, .keying).total == 1)
         m.disappear()
     }
+
+    /// The rule became true during practice (or the app died mid-hold): the reveal fires on the next normal prompt.
+    @Test func pendingUnlockAtEntryPresentsTheReveal() {
+        let (p, app) = makeKeying(fixture: "aboutToUnlock", practice: "M")
+        key(p, code: Morse.code(for: "M")!, dit: 0.1)
+        #expect(app.state.progress.pendingUnlock)
+        let m = KeyingModel(app: app, tone: app.tone, haptics: app.haptics, now: { 0 })
+        #expect(m.revealPending == "R")
+        #expect(m.revealReady == "R")
+        let (g, gapp) = makeKeying(fixture: "aboutToUnlock", guided: GuidedRounds(drill: .keying, character: "R", remaining: 3))
+        gapp.state.progress.log("M", .keying, correct: true)
+        let guided = KeyingModel(app: gapp, tone: gapp.tone, haptics: gapp.haptics, now: { 0 })
+        #expect(guided.revealPending == nil)  // guided rounds come first
+        _ = g
+    }
 }

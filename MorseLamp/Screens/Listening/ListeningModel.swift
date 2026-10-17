@@ -61,6 +61,10 @@ final class ListeningModel {
             } else {
                 answer = CharacterPicker.pick(from: app.state.progress, skill: .listening, avoiding: nil, using: &app.rng)
             }
+            // The rule became true during practice, or the app closed mid-hold: the reveal comes before any round.
+            if app.state.progress.pendingUnlock {
+                revealPending = app.state.progress.next
+            }
         }
         prepareRound()
     }

@@ -142,4 +142,17 @@ struct ListeningModelTests {
         #expect(m.status != ListeningModel.interruptedStatus)
         m.disappear()
     }
+
+    @Test func pendingUnlockAtEntryParksForTheReveal() async {
+        let (first, app) = makeListening(fixture: "aboutToUnlock")
+        app.state.progress.log("M", .keying, correct: true)
+        #expect(app.state.progress.pendingUnlock)
+        _ = first
+        let m = ListeningModel(app: app, tone: app.tone, haptics: app.haptics)
+        #expect(m.revealPending == "R")
+        await m.appear()
+        #expect(m.phase == .hold)
+        #expect(m.revealReady == "R")
+        m.disappear()
+    }
 }

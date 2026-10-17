@@ -73,6 +73,10 @@ final class KeyingModel {
             } else {
                 target = CharacterPicker.pick(from: app.state.progress, skill: .keying, avoiding: nil, using: &app.rng)
             }
+            // The rule became true during practice, or the app closed mid-hold: the reveal fires on this prompt.
+            if app.state.progress.pendingUnlock {
+                revealPending = app.state.progress.next
+            }
         }
         refreshStatus()
     }
