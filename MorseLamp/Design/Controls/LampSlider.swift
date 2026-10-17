@@ -12,6 +12,9 @@ struct LampSlider: View {
     let onRelease: (() -> Void)?
 
     @State private var trackWidth: CGFloat = 0
+    /// True while a drag is in flight. Resets when the gesture ends *or* is cancelled (a scroll
+    /// taking over, a system gesture), which `onEnded` alone would miss.
+    @GestureState private var isDragging = false
     @Environment(\.palette) private var palette
 
     private let knob: CGFloat = 28
@@ -52,12 +55,15 @@ struct LampSlider: View {
             // Only the track takes drags, so a scroll that starts on the title row still scrolls.
             .gesture(
                 DragGesture(minimumDistance: 0)
+                    .updating($isDragging) { _, dragging, _ in dragging = true }
                     .onChanged { gesture in
                         set(fraction: (gesture.location.x - knob / 2) / max(travel, 1))
                         onDrag?(value)
                     }
-                    .onEnded { _ in onRelease?() }
             )
+            .onChange(of: isDragging) { _, dragging in
+                if !dragging { onRelease?() }
+            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
