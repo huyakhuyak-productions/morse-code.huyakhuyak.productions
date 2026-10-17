@@ -84,6 +84,11 @@ final class KeyingModel {
         haptics.isEnabled = app.state.settings.haptics
         await tone.start()
         tone.setPitch(app.state.settings.pitchHz)
+        // Backgrounded during a result hold: the hold task is gone, so move on to the next prompt here.
+        if phase != .keying {
+            nextPrompt()
+            return
+        }
         refreshStatus()
         announce(String(target))
     }

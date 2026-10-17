@@ -43,6 +43,8 @@ final class ListeningModel {
     @ObservationIgnored private var roundTask: Task<Void, Never>?
     /// Bumped by every new round, so playback that finishes late cannot touch a later round.
     @ObservationIgnored private var roundID = 0
+    /// The first `appear()` plays the prepared round; a later one during `.playing` leaves the sound alone.
+    @ObservationIgnored private var isFirstPlay = true
 
     init(app: AppModel, tone: any Tone, haptics: Haptics) {
         self.app = app
@@ -69,11 +71,30 @@ final class ListeningModel {
 
     // MARK: Lifecycle
 
+    /// First entry plays the round. Returning from the background resumes by phase: a finished
+    /// round moves on, an awaiting round replays, a sounding round is left to finish, and a pending
+    /// reveal parks the drill until the view hands over.
     func appear() async {
         haptics.isEnabled = app.state.settings.haptics
         await tone.start()
         tone.setPitch(app.state.settings.pitchHz)
-        await playRound()
+        if revealPending != nil {
+            phase = .hold
+            return
+        }
+        switch phase {
+        case .right, .wrong, .hold:
+            nextRound()
+            await playRound()
+        case .awaiting:
+            await playRound()
+        case .playing:
+            // The first entry plays the prepared round. Later, a sounding round is left to finish:
+            // if the background cut it, `playRound` already parked it as unheard and awaiting.
+            guard isFirstPlay else { return }
+            isFirstPlay = false
+            await playRound()
+        }
     }
 
     func disappear() {

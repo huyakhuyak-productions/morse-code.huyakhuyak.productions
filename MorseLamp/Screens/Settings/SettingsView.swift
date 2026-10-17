@@ -105,6 +105,10 @@ struct SettingsView: View {
             app.tone.stop()
             app.save()
         }
+        .onBackgroundReturn {
+            // The app stops the engine on background; Play sample and the pitch preview need it back.
+            await app.tone.start()
+        }
         .onChange(of: app.state.settings) { _, settings in
             app.haptics.isEnabled = settings.haptics
             app.tone.setPitch(settings.pitchHz)

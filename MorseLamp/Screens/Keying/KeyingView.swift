@@ -11,7 +11,6 @@ struct KeyingView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.palette) private var palette
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -41,12 +40,9 @@ struct KeyingView: View {
             reveal = RevealModel(app: app, from: .keying, tone: model.tone, haptics: app.haptics)
         }
         .onDisappear { model?.disappear() }
-        .onChange(of: scenePhase) { _, phase in
-            switch phase {
-            case .background: model?.disappear()
-            case .active: Task { await model?.appear() }
-            default: break
-            }
+        .onBackgroundReturn(leave: { model?.disappear() }) {
+            // Under the reveal only the engine needs restarting; the drill resumes after "Keep going".
+            if reveal != nil { await app.tone.start() } else { await model?.appear() }
         }
         .onChange(of: model?.didFinishPractice ?? false) { _, finished in
             if finished { dismiss() }

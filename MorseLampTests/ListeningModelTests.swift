@@ -114,4 +114,32 @@ struct ListeningModelTests {
         #expect(n.revealPending == "R")
         n.disappear()
     }
+
+    /// Lock the phone during the result hold: coming back starts a new round and never scores the old one twice.
+    @Test func foregroundDuringTheHoldStartsANewRoundWithoutDoubleLogging() async {
+        let (m, app) = makeListening(fixture: "fresh")
+        await m.appear()
+        let answer = m.answer
+        await m.pick(answer)
+        #expect(m.phase == .right)
+        m.disappear()
+        await m.appear()
+        #expect(m.phase == .awaiting)
+        #expect(m.answer != answer)
+        #expect(m.revealedCode == nil)
+        await m.pick(m.answer)
+        #expect(app.state.progress.record(answer, .listening).total == 1)
+        m.disappear()
+    }
+
+    /// Control Center or a banner: `.inactive` then `.active` with no background. Nothing replays and nothing is unscored.
+    @Test func reappearWhileAwaitingReplaysOnlyOnce() async {
+        let (m, _) = makeListening(fixture: "fresh")
+        await m.appear()
+        #expect(m.phase == .awaiting)
+        await m.appear()
+        #expect(m.phase == .awaiting)
+        #expect(m.status != ListeningModel.interruptedStatus)
+        m.disappear()
+    }
 }

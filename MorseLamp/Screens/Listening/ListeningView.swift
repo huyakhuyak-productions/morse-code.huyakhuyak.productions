@@ -8,7 +8,6 @@ struct ListeningView: View {
 
     @Environment(AppModel.self) private var app
     @Environment(\.palette) private var palette
-    @Environment(\.scenePhase) private var scenePhase
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 6)
 
@@ -39,12 +38,8 @@ struct ListeningView: View {
             reveal = RevealModel(app: app, from: .listening, tone: model.tone, haptics: app.haptics)
         }
         .onDisappear { model?.disappear() }
-        .onChange(of: scenePhase) { _, phase in
-            switch phase {
-            case .background: model?.disappear()
-            case .active: Task { await model?.appear() }
-            default: break
-            }
+        .onBackgroundReturn(leave: { model?.disappear() }) {
+            if reveal != nil { await app.tone.start() } else { await model?.appear() }
         }
     }
 

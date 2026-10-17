@@ -148,4 +148,19 @@ struct KeyingModelTests {
         n.refreshStatus()
         #expect(n.status.isEmpty)
     }
+
+    /// Lock the phone during the 800 ms hold: coming back must not leave the paddle dead.
+    @Test func foregroundDuringTheHoldResumesWithAFreshPrompt() async {
+        let (m, app) = makeKeying(fixture: "fresh")
+        let target = m.target
+        key(m, code: Morse.code(for: target)!, dit: 0.1)
+        #expect(m.phase == .matched)
+        m.disappear()
+        await m.appear()
+        #expect(m.phase == .keying)
+        #expect(m.keyed.isEmpty)
+        #expect(m.target != target)
+        #expect(app.state.progress.record(target, .keying).total == 1)
+        m.disappear()
+    }
 }
