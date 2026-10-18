@@ -30,6 +30,8 @@
       home-screen styles, the launch colour in light and dark, and that the tone plays with
       the silent switch on.
 - [ ] TestFlight → External Testing: create the group "Friends", add the build, turn on
-      Public Link, copy the link into `web/src/lib/site.ts` (`GET_APP.href`).
+      Public Link, copy the link into `web/src/lib/site.ts` (`GET_APP`: label "Join the
+      TestFlight"), commit, `bun run test` in `web/`, then `git push dokku main` so the live page
+      shows the button before review.
 - [ ] Submit the group for Beta App Review only after the web page is live: the review asks
       for the privacy policy URL, `https://morse-code.huyakhuyak.productions/privacy`.

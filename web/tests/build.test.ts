@@ -38,6 +38,19 @@ describe("built site", () => {
     expect(html("privacy/index.html")).toContain(CONTACT);
   });
 
+  test("privacy page is honest about what TestFlight shares", () => {
+    const page = html("privacy/index.html");
+    expect(page).toContain("TestFlight");
+    expect(page).not.toContain("None of it reaches me");
+  });
+
+  test("copy promises only the 36 characters the app teaches", () => {
+    for (const page of ["index.html", "support/index.html"]) {
+      expect(html(page)).not.toMatch(/prosign|punctuation/i);
+    }
+    expect(html("support/index.html")).toContain("26 letters and 10 digits");
+  });
+
   test("support page names the contact and the four answers", () => {
     const page = html("support/index.html");
     expect(page).toContain(`mailto:${CONTACT}?subject=Morse%20Lamp`);

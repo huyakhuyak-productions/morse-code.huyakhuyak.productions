@@ -20,9 +20,9 @@ Morse Lamp teaches you Morse code in the minutes you would otherwise spend scrol
 
 Two drills. In keying, the app shows a character and you tap it out on one big paddle: a short press is a dit, a long one a dah. It learns your rhythm from your first presses and shows exactly what it heard. In listening, a 600 Hz tone and a blinking lamp play a pattern and you name the character, from a short row of candidates at first and from a full keyboard once you know ten.
 
-The alphabet arrives Koch-style. You start with K and M, drill only what you have unlocked, and when your set is solid the next character is revealed as a sound before you see its shape. Letters first, then digits, punctuation and two prosigns. Weak characters come up more often, quietly. An optional strict timing mode also checks your dah length and gaps.
+The alphabet arrives Koch-style. You start with K and M, drill only what you have unlocked, and when your set is solid the next character is revealed as a sound before you see its shape. All 26 letters and 10 digits, digits mixed in along the way. Weak characters come up more often, quietly. An optional strict timing mode also checks your dah length and gaps.
 
-No accounts, no tracking, no ads, no notifications. The app never connects to the internet and works entirely offline. Sound is optional: the lamp and haptics carry the signal when your phone is silent.
+No accounts, no tracking, no ads, no notifications. The app never connects to the internet and works entirely offline. Sound is optional: the lamp and haptics carry the signal when the volume is down.
 
 ## Keywords
 

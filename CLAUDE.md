@@ -77,7 +77,8 @@ the owner raises it by hand.
 CSS 4 (`@tailwindcss/vite`), `astro-og-canvas` for the og-image and `@astrojs/sitemap`. It wears
 the app's palette as `@theme` tokens in `web/src/styles/lamp.css`, with a `prefers-color-scheme`
 override for light. `web/src/lib/site.ts` holds the constants, including the landing button
-`GET_APP` (TestFlight link now, App Store link later; never an empty href). In `web/`:
+`GET_APP` (the GitHub source link until the TestFlight public link exists, then that link,
+then the App Store link; never an empty href). In `web/`:
 `bun run dev`, `bun run check`, `bun run test` (builds, then checks `dist/` for the og images,
 the button link and the contact address). The icon copies in `web/public` and `web/src/assets`
 come from `scripts/render-icon.sh`, the screenshots from `scripts/compose-screenshots.swift`;

@@ -17,11 +17,11 @@ only when you look.
   unlocked set once you know ten characters.
 - **Unlocking.** Koch method: you start with K and M, drill only what you have unlocked,
   and the next character is revealed with a listen-and-guess moment when your recent
-  accuracy is high. Letters first, then digits, punctuation and two prosigns. Weak
-  characters come up more often.
+  accuracy is high. The 26 letters and 10 digits, in the Koch order, digits mixed in along
+  the way. Weak characters come up more often.
 - **Strict timing** is an optional setting that also checks dah length and the gaps
   between elements, with a tolerance band.
-- **Sound is optional.** The lamp and haptics carry the signal when the phone is silent.
+- **Sound is optional.** The lamp and haptics carry the signal when the volume is down.
 
 ## Get it
 
