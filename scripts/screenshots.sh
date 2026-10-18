@@ -10,7 +10,7 @@ RAW="$WORK/raw"
 OUT=docs/store/screenshots
 
 mkdir -p "$RAW"
-xcrun simctl bootstatus "$SIM" -b >/dev/null
+xcrun simctl bootstatus "$SIM" -b >/dev/null   # -b: boot if needed; simctl has no long form
 xcrun simctl ui "$SIM" appearance dark
 xcrun simctl status_bar "$SIM" override --time 9:41 --batteryState discharging --batteryLevel 100 \
   --cellularMode active --cellularBars 4 --wifiBars 3

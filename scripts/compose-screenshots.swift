@@ -21,8 +21,8 @@ let shots: [(file: String, slug: String, caption: String)] = [
 
 let canvasWidth = 1320
 let canvasHeight = 2868
-let captureTop: CGFloat = 560        // points from the top of the canvas
-let captureWidthFraction: CGFloat = 0.86
+let captureTop: CGFloat = 520        // points from the top of the canvas
+let captureWidthFraction: CGFloat = 0.80   // 1056 px wide, 2294 px tall: the whole screen fits above the bottom edge
 let cornerRadius: CGFloat = 110
 let captionSize: CGFloat = 88
 let captionMargin: CGFloat = 96
@@ -90,15 +90,15 @@ for shot in shots.enumerated() {
     guard let capture = loadImage(input) else { fail("missing capture \(input.path)", code: 1) }
     guard let context = CGContext(data: nil, width: canvasWidth, height: canvasHeight, bitsPerComponent: 8,
                                   bytesPerRow: 0, space: colorSpace,
-                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+                                  bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else {
         fail("could not create canvas", code: 1)
     }
     let canvas = CGRect(x: 0, y: 0, width: canvasWidth, height: canvasHeight)
     context.setFillColor(CGColor(colorSpace: colorSpace, components: [0, 0, 0, 1])!)
     context.fill(canvas)
 
-    // Capture: 86 % of the width, centred, its top `captureTop` below the canvas top. CoreGraphics
-    // measures from the bottom, so the rect may start below zero and bleed off the bottom edge.
+    // Capture: 80 % of the width, centred, its top `captureTop` below the canvas top, so the whole
+    // screen (the paddle included) stays inside the canvas. CoreGraphics measures from the bottom.
     let width = (CGFloat(canvasWidth) * captureWidthFraction).rounded()
     let height = (width * CGFloat(capture.height) / CGFloat(capture.width)).rounded()
     let rect = CGRect(x: ((CGFloat(canvasWidth) - width) / 2).rounded(),
@@ -129,7 +129,7 @@ for shot in shots.enumerated() {
         let webHeight = Int((CGFloat(canvasHeight) * scale).rounded())
         guard let small = CGContext(data: nil, width: webWidth, height: webHeight, bitsPerComponent: 8,
                                     bytesPerRow: 0, space: colorSpace,
-                                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+                                    bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else {
             fail("could not create web canvas", code: 1)
         }
         small.interpolationQuality = .high
