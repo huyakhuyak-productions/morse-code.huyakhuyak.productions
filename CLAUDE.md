@@ -51,6 +51,15 @@ appear and stop it on disappear; the app stops it on background and the shared
 `onBackgroundReturn` modifier restarts it. The letter sheet must not stop it when it hands
 over to the practice drill (the sheet's disappearance fires after the drill has started).
 
+## Release assets
+
+The app icon is an Icon Composer bundle, `MorseLamp/AppIcon.icon`: a JSON manifest plus one PNG
+per layer, compiled by actool because `ASSETCATALOG_COMPILER_APPICON_NAME` matches its basename.
+The PNGs are rendered from the SVGs in `design/icon/` by `scripts/render-icon.sh`; never edit them
+by hand. `UIImage(named: "AppIcon")` throws for a layered icon, so `BundleTests` checks the flat
+fallback file that `CFBundleIconFiles` names. A layer whose alpha fades under glass shows a hard
+seam where the glass mask ends, so only the opaque dot has glass on.
+
 ## Deploying to an iPhone
 
 The bundle id is `productions.huyakhuyak.MorseLamp` (capital M and L). The team registered that
