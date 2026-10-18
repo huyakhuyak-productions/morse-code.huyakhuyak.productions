@@ -60,6 +60,17 @@ by hand. `UIImage(named: "AppIcon")` throws for a layered icon, so `BundleTests`
 fallback file that `CFBundleIconFiles` names. A layer whose alpha fades under glass shows a hard
 seam where the glass mask ends, so only the opaque dot has glass on.
 
+## Release
+
+`scripts/release.sh` is the whole TestFlight upload: it refuses on a dirty tree, bumps the build
+number with `agvtool next-version -all` (which needs `VERSIONING_SYSTEM = apple-generic`, set in
+the project), commits `🔖 Build <n>`, archives for `generic/platform=iOS` into
+`$TMPDIR/MorseLamp-<n>.xcarchive`, and exports with `scripts/ExportOptions.plist`
+(`app-store-connect`, `destination upload`). `--dry-run` prints the commands. It authenticates
+with the Apple ID signed into Xcode; if that fails, export `ASC_KEY_PATH` (a `.p8` kept outside
+the repo), `ASC_KEY_ID` and `ASC_ISSUER_ID` and run it again. Marketing version is `1.0` until
+the owner raises it by hand.
+
 ## Deploying to an iPhone
 
 The bundle id is `productions.huyakhuyak.MorseLamp` (capital M and L). The team registered that

@@ -436,6 +436,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Morse Lamp";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				VERSIONING_SYSTEM = "apple-generic";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_FILE = MorseLamp/Info.plist;
@@ -477,6 +478,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Morse Lamp";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				VERSIONING_SYSTEM = "apple-generic";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_FILE = MorseLamp/Info.plist;
