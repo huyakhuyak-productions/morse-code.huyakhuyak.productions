@@ -1,3 +1,5 @@
+<img src="design/icon/icon-1024.png" width="96" height="96" alt="">
+
 # Morse Lamp
 
 A personal iPhone app for learning Morse code in idle minutes. You key letters on one
@@ -20,6 +22,14 @@ only when you look.
 - **Strict timing** is an optional setting that also checks dah length and the gaps
   between elements, with a tolerance band.
 - **Sound is optional.** The lamp and haptics carry the signal when the phone is silent.
+
+## Get it
+
+The site is at [morse-code.huyakhuyak.productions](https://morse-code.huyakhuyak.productions),
+with the [privacy policy](https://morse-code.huyakhuyak.productions/privacy) and
+[support](https://morse-code.huyakhuyak.productions/support) pages. The TestFlight public link
+appears on the landing page as soon as the beta is live; until then, build from source below.
+The App Store listing copy and screenshots live in `docs/store/`.
 
 ## Project layout
 
