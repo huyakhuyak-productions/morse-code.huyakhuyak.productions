@@ -57,7 +57,7 @@ xcrun devicectl device install app --device <device id> \
 
 The phone needs Developer Mode on and must be paired with `xcrun devicectl manage pair`.
 
-## Type
+## Licence
 
-The app uses [Archivo](https://github.com/Omnibus-Type/Archivo) by Omnibus-Type, bundled
+MIT, see `LICENSE`. The app uses [Archivo](https://github.com/Omnibus-Type/Archivo) by Omnibus-Type, bundled
 under the SIL Open Font License (`MorseLamp/Resources/Fonts/OFL.txt`).
