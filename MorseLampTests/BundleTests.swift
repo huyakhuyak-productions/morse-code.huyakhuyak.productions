@@ -18,4 +18,15 @@ struct BundleTests {
         let image = try #require(UIImage(contentsOfFile: url.path))
         #expect(image.size.width > 0)
     }
+
+    @Test func launchScreenUsesTheAppBackgroundColour() throws {
+        let launch = try #require(Bundle.main.infoDictionary?["UILaunchScreen"] as? [String: Any])
+        let colorName = try #require(launch["UIColorName"] as? String)
+        #expect(colorName == "LaunchBackground")
+        let color = try #require(UIColor(named: colorName))
+        var dark: CGFloat = -1, light: CGFloat = -1
+        #expect(color.resolvedColor(with: .init(userInterfaceStyle: .dark)).getWhite(&dark, alpha: nil))
+        #expect(color.resolvedColor(with: .init(userInterfaceStyle: .light)).getWhite(&light, alpha: nil))
+        #expect(abs(dark) < 0.001 && abs(light - 1) < 0.001, "dark=\(dark) light=\(light)")
+    }
 }
