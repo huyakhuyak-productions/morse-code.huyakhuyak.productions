@@ -29,4 +29,9 @@ struct BundleTests {
         #expect(color.resolvedColor(with: .init(userInterfaceStyle: .light)).getWhite(&light, alpha: nil))
         #expect(abs(dark) < 0.001 && abs(light - 1) < 0.001, "dark=\(dark) light=\(light)")
     }
+
+    @Test func declaresNoNonExemptEncryption() throws {
+        let uses = try #require(Bundle.main.infoDictionary?["ITSAppUsesNonExemptEncryption"] as? Bool)
+        #expect(uses == false)
+    }
 }
