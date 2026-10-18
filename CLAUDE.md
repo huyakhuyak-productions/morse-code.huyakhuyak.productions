@@ -71,6 +71,20 @@ with the Apple ID signed into Xcode; if that fails, export `ASC_KEY_PATH` (a `.p
 the repo), `ASC_KEY_ID` and `ASC_ISSUER_ID` and run it again. Marketing version is `1.0` until
 the owner raises it by hand.
 
+## Web page
+
+`web/` is the site at `https://morse-code.huyakhuyak.productions`: Astro 6 on Bun with Tailwind
+CSS 4 (`@tailwindcss/vite`), `astro-og-canvas` for the og-image and `@astrojs/sitemap`. It wears
+the app's palette as `@theme` tokens in `web/src/styles/lamp.css`, with a `prefers-color-scheme`
+override for light. `web/src/lib/site.ts` holds the constants, including the landing button
+`GET_APP` (TestFlight link now, App Store link later; never an empty href). In `web/`:
+`bun run dev`, `bun run check`, `bun run test` (builds, then checks `dist/` for the og images,
+the button link and the contact address). The icon copies in `web/public` and `web/src/assets`
+come from `scripts/render-icon.sh`, the screenshots from `scripts/compose-screenshots.swift`;
+regenerate, do not edit. Deploys with `git push dokku main` to `dokku@oasis.wg`, app
+`morse-code-huyakhuyak-productions`, built from `web/` as the Docker context
+(`builder:set ... build-dir web`); the one-time dokku commands are in `web/README.md`.
+
 ## Deploying to an iPhone
 
 The bundle id is `productions.huyakhuyak.MorseLamp` (capital M and L). The team registered that

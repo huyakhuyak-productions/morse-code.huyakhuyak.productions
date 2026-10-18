@@ -1,0 +1,65 @@
+---
+import { Image } from "astro:assets";
+import Lamp from "@/layouts/Lamp.astro";
+import { GET_APP, SOURCE_URL, TAGLINE } from "@/lib/site";
+import icon from "@/assets/icon-1024.png";
+import keying from "@/assets/screenshots/1-keying.png";
+import listening from "@/assets/screenshots/2-listening.png";
+import reveal from "@/assets/screenshots/4-reveal.png";
+
+const shots = [
+  { src: keying, alt: "The keying drill: a large letter A above a white paddle." },
+  { src: listening, alt: "The listening drill: a play button above a keyboard of unlocked letters." },
+  { src: reveal, alt: "The unlock moment: the question Which one was it? above three guesses, F, R and U." },
+];
+
+const steps = [
+  ["Key it.", "One big paddle. A short press is a dit, a long one a dah. The app learns your rhythm from your first presses and judges against it."],
+  ["Hear it.", "A 600 Hz tone, and the lamp blinks in time with it. You answer from a short row at first, then from a keyboard of everything you know."],
+  ["Unlock it.", "Koch method: K and M first, the rest one character at a time when your recent accuracy is high. Letters, then digits, punctuation and two prosigns."],
+  ["Nothing else.", "No accounts, no tracking, no ads, no streaks. Progress lives on the phone, and the app works entirely offline."],
+];
+---
+
+<Lamp title="Morse Lamp">
+  <main class="flex-1">
+    <header class="flex flex-col items-center pt-16 text-center sm:pt-24">
+      <Image src={icon} alt="" width={160} height={160} densities={[1, 2]} class="size-40 rounded-[22.4%]" loading="eager" />
+      <h1 class="mt-8 text-5xl font-black tracking-tight sm:text-6xl">Morse Lamp</h1>
+      <p class="mt-3 text-xl font-medium text-fg-dim sm:text-2xl">{TAGLINE}</p>
+      <a
+        href={GET_APP.href}
+        class="mt-8 inline-block rounded-full bg-accent px-7 py-3.5 text-lg font-semibold text-white hover:opacity-90"
+      >
+        {GET_APP.label}
+      </a>
+    </header>
+
+    <section aria-label="Screenshots" class="mt-16 grid grid-cols-1 gap-6 sm:mt-24 sm:grid-cols-3">
+      {shots.map((shot) => (
+        <Image src={shot.src} alt={shot.alt} width={330} densities={[1, 2]} class="w-full max-w-[330px] justify-self-center rounded-[6%]" />
+      ))}
+    </section>
+
+    <section class="mt-16 sm:mt-24">
+      <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-fg-dim">How it works</h2>
+      <ol class="mt-6 grid gap-8 sm:grid-cols-2">
+        {steps.map(([head, body]) => (
+          <li class="min-w-0">
+            <h3 class="text-2xl font-black">{head}</h3>
+            <p class="mt-2 text-fg-dim">{body}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  </main>
+
+  <footer class="mt-20 border-t border-fg/15 py-8 text-sm text-fg-dim sm:mt-28">
+    <nav aria-label="Footer" class="flex flex-wrap gap-x-6 gap-y-2">
+      <a href="/privacy" class="hover:text-fg">Privacy</a>
+      <a href="/support" class="hover:text-fg">Support</a>
+      <a href={SOURCE_URL} class="hover:text-fg">Source</a>
+    </nav>
+    <p class="mt-4">Free and open source under the MIT licence. © 2026 Mykola Solodukha.</p>
+  </footer>
+</Lamp>

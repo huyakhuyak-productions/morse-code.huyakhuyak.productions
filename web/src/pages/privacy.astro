@@ -1,0 +1,47 @@
+---
+import Lamp from "@/layouts/Lamp.astro";
+import { CONTACT } from "@/lib/site";
+---
+
+<Lamp title="Privacy" description="Morse Lamp keeps your progress on your device and collects nothing.">
+  <main class="prose-lamp flex-1 pt-12 sm:pt-16">
+    <a href="/" class="text-sm text-fg-dim hover:text-fg">Morse Lamp</a>
+    <h1 class="mt-6 text-4xl font-black tracking-tight">Privacy policy</h1>
+    <p class="mt-2 text-fg-dim">18 October 2026</p>
+
+    <h2>What the app stores</h2>
+    <p>
+      Morse Lamp keeps your progress and settings on your device only: which characters you have
+      unlocked, how accurately you have keyed and recognised them, your measured dit length, and
+      the switches in Settings. Nothing leaves the phone.
+    </p>
+
+    <h2>What the app collects</h2>
+    <p>
+      Nothing. Morse Lamp does not collect, transmit or share any data. It has no accounts, no
+      analytics, no advertising and no network access of any kind. It never connects to the
+      internet.
+    </p>
+
+    <h2>Deleting your data</h2>
+    <p>
+      Deleting the app deletes everything it stored. Settings → Reset progress wipes your progress
+      while keeping the app installed.
+    </p>
+
+    <h2>Apple</h2>
+    <p>
+      If you install Morse Lamp through TestFlight or the App Store, Apple collects its own data,
+      such as crash logs and download counts, under Apple's privacy policy. None of it reaches me
+      with anything that identifies you.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions about this policy go to <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+    </p>
+  </main>
+  <footer class="mt-16 py-8 text-sm text-fg-dim">
+    <nav aria-label="Footer" class="flex gap-6"><a href="/" class="hover:text-fg">Home</a><a href="/support" class="hover:text-fg">Support</a></nav>
+  </footer>
+</Lamp>

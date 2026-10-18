@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://morse-code.huyakhuyak.productions/sitemap-index.xml

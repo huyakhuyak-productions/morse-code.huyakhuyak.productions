@@ -1,0 +1,44 @@
+---
+import Lamp from "@/layouts/Lamp.astro";
+import { CONTACT } from "@/lib/site";
+const mailto = `mailto:${CONTACT}?subject=Morse%20Lamp`;
+---
+
+<Lamp title="Support" description="Answers to the common Morse Lamp questions, and how to reach me.">
+  <main class="prose-lamp flex-1 pt-12 sm:pt-16">
+    <a href="/" class="text-sm text-fg-dim hover:text-fg">Morse Lamp</a>
+    <h1 class="mt-6 text-4xl font-black tracking-tight">Support</h1>
+    <p class="mt-4">
+      Write to <a href={mailto}>{CONTACT}</a>. Say which phone you use and what you expected to
+      happen; I answer personally.
+    </p>
+
+    <h2>Why is there no sound?</h2>
+    <p>
+      Turn the volume up: the drills show "Sound is off" while it sits at zero. The silent switch
+      does not mute Morse Lamp. On Bluetooth headphones the tone can arrive a beat late; the lamp
+      and the haptics are always on time, so trust them for rhythm.
+    </p>
+
+    <h2>How do I reset my progress?</h2>
+    <p>
+      Settings → Reset progress. The app asks you to confirm, then locks everything except K and
+      M and forgets your measured rhythm. There is no undo.
+    </p>
+
+    <h2>What order do letters unlock in, and why?</h2>
+    <p>
+      Morse Lamp follows the Koch method: you start with K and M, drill only what you have
+      unlocked, and the next character arrives when your set is solid. "Solid" means the newest
+      character has at least 20 attempts in keying and 20 in listening, and your whole set is at
+      90 % or better over its last 50 attempts. Letters come first, then digits, punctuation and
+      the prosigns AR and SK. Weak characters come up more often.
+    </p>
+
+    <h2>Does it work offline?</h2>
+    <p>Entirely. The app never connects to the internet, so there is nothing to be offline from.</p>
+  </main>
+  <footer class="mt-16 py-8 text-sm text-fg-dim">
+    <nav aria-label="Footer" class="flex gap-6"><a href="/" class="hover:text-fg">Home</a><a href="/privacy" class="hover:text-fg">Privacy</a></nav>
+  </footer>
+</Lamp>

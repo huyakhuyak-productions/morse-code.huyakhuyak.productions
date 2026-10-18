@@ -28,6 +28,9 @@ let captionSize: CGFloat = 88
 let captionMargin: CGFloat = 96
 let fontPath = "MorseLamp/Resources/Fonts/Archivo-SemiBold.ttf"
 let fontName = "Archivo-SemiBold"
+let webShots: Set<String> = ["keying", "listening", "reveal"]
+let webWidth = 660
+let webDir = URL(fileURLWithPath: "web/src/assets/screenshots", isDirectory: true)
 
 func fail(_ message: String, code: Int32) -> Never {
     FileHandle.standardError.write(Data((message + "\n").utf8))
@@ -52,6 +55,7 @@ let font = CTFontCreateWithName(fontName as CFString, captionSize, nil)
 guard CTFontCopyPostScriptName(font) as String == fontName else { fail("\(fontName) not available", code: 2) }
 
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
+try? FileManager.default.createDirectory(at: webDir, withIntermediateDirectories: true)
 let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
 
 func loadImage(_ url: URL) -> CGImage? {
@@ -117,4 +121,26 @@ for shot in shots.enumerated() {
     CGImageDestinationAddImage(destination, image, nil)
     guard CGImageDestinationFinalize(destination) else { fail("could not write \(output.path)", code: 1) }
     print("wrote \(output.path)")
+
+    // The landing page shows 1, 2 and 4 at 660 px wide. The Docker build context is web/, so
+    // the copies live there.
+    if webShots.contains(shot.element.slug) {
+        let scale = CGFloat(webWidth) / CGFloat(canvasWidth)
+        let webHeight = Int((CGFloat(canvasHeight) * scale).rounded())
+        guard let small = CGContext(data: nil, width: webWidth, height: webHeight, bitsPerComponent: 8,
+                                    bytesPerRow: 0, space: colorSpace,
+                                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            fail("could not create web canvas", code: 1)
+        }
+        small.interpolationQuality = .high
+        small.draw(image, in: CGRect(x: 0, y: 0, width: webWidth, height: webHeight))
+        guard let smallImage = small.makeImage() else { fail("could not scale \(shot.element.slug)", code: 1) }
+        let webOutput = webDir.appendingPathComponent("\(shot.offset + 1)-\(shot.element.slug).png")
+        guard let webDestination = CGImageDestinationCreateWithURL(webOutput as CFURL, "public.png" as CFString, 1, nil) else {
+            fail("could not write \(webOutput.path)", code: 1)
+        }
+        CGImageDestinationAddImage(webDestination, smallImage, nil)
+        guard CGImageDestinationFinalize(webDestination) else { fail("could not write \(webOutput.path)", code: 1) }
+        print("wrote \(webOutput.path)")
+    }
 }
