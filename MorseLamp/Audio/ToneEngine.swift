@@ -181,7 +181,7 @@ nonisolated final class ToneEngine: Tone {
         isActive = true
         let session = AVAudioSession.sharedInstance()
         do {
-            try session.setCategory(.ambient, mode: .default, options: [])
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try session.setPreferredIOBufferDuration(0.005)
             try session.setActive(true)
         } catch {

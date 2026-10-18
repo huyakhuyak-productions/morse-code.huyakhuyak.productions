@@ -113,6 +113,15 @@ struct ToneEngineTests {
         #expect(!lamp.isLit)
         #expect(lamp.litElementIndex == nil)
     }
+
+    @Test func sessionMixesWithOthers() async {
+        let e = ToneEngine(lamp: LampState(), pitchHz: 600)
+        await e.start()
+        let session = AVAudioSession.sharedInstance()
+        #expect(session.category == .playback)
+        #expect(session.categoryOptions.contains(.mixWithOthers))
+        e.stop()
+    }
 }
 
 private final class DoneFlag: Sendable {
