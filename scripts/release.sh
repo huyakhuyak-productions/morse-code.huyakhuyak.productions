@@ -50,9 +50,9 @@ run git add MorseLamp.xcodeproj/project.pbxproj
 run git commit --quiet --message "🔖 Build $NEXT" \
   --message "Build number bumped by scripts/release.sh before archiving for TestFlight."
 run xcodebuild archive -project MorseLamp.xcodeproj -scheme MorseLamp \
-  -destination 'generic/platform=iOS' -archivePath "$ARCHIVE" -allowProvisioningUpdates "${AUTH[@]}"
+  -destination 'generic/platform=iOS' -archivePath "$ARCHIVE" -allowProvisioningUpdates ${AUTH[@]+"${AUTH[@]}"}
 run xcodebuild -exportArchive -archivePath "$ARCHIVE" \
   -exportOptionsPlist scripts/ExportOptions.plist -exportPath "$ARCHIVE.export" \
-  -allowProvisioningUpdates "${AUTH[@]}"
+  -allowProvisioningUpdates ${AUTH[@]+"${AUTH[@]}"}
 
-echo "Build $NEXT archived at $ARCHIVE"
+if [[ $DRY_RUN -eq 0 ]]; then echo "Build $NEXT archived at $ARCHIVE"; fi
