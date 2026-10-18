@@ -3,7 +3,7 @@ import Observation
 import os
 
 nonisolated enum LampLog {
-    static let subsystem = "productions.huyakhuyak.morselamp"
+    static let subsystem = "productions.huyakhuyak.MorseLamp"
 }
 
 /// The one source of truth for the running app: state, its store, and the lamp.

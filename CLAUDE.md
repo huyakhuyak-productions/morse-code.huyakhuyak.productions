@@ -51,17 +51,20 @@ appear and stop it on disappear; the app stops it on background and the shared
 `onBackgroundReturn` modifier restarts it. The letter sheet must not stop it when it hands
 over to the practice drill (the sheet's disappearance fires after the drill has started).
 
-## Deploying to the owner's iPhone
+## Deploying to an iPhone
 
-The team's registered App ID is `productions.huyakhuyak.MorseLamp` (the template's
-capitalisation). The project's lowercase `productions.huyakhuyak.morselamp` cannot be
-registered alongside it (Apple compares App IDs case-insensitively), so a device build
-must override the id until the project or the portal is changed:
+The bundle id is `productions.huyakhuyak.MorseLamp` (capital M and L). The team registered that
+capitalisation from the Xcode template, and Apple compares App IDs case-insensitively, so the
+lowercase spelling cannot coexist with it. The `LampLog.subsystem` string mirrors the id and a
+unit test keeps them equal.
 
 ```bash
 xcodebuild build -project MorseLamp.xcodeproj -scheme MorseLamp \
-  -destination 'platform=iOS,id=<device id from: xcrun devicectl list devices>' \
-  -allowProvisioningUpdates PRODUCT_BUNDLE_IDENTIFIER=productions.huyakhuyak.MorseLamp
+  -destination 'platform=iOS,id=<device id from: xcrun devicectl list devices>' -allowProvisioningUpdates
 xcrun devicectl device install app --device <device id> <DerivedData>/Build/Products/Debug-iphoneos/MorseLamp.app
 xcrun devicectl device process launch --device <device id> productions.huyakhuyak.MorseLamp
 ```
+
+A new phone needs Developer Mode on and `xcrun devicectl manage pair --device <id>` first;
+`-allowProvisioningUpdates` registers its UDID with the team. Launching fails with
+`BSErrorCodeDescription = Locked` while the phone is locked.

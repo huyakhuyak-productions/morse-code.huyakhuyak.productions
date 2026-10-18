@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import MorseCore
 @testable import MorseLamp
@@ -33,5 +34,9 @@ struct AppModelTests {
         #expect(!s.progress.isSetSolid)
         s.progress.log("M", .keying, correct: true)
         #expect(s.progress.pendingUnlock)
+    }
+
+    @Test func loggingSubsystemIsTheBundleIdentifier() {
+        #expect(LampLog.subsystem == Bundle.main.bundleIdentifier)
     }
 }
