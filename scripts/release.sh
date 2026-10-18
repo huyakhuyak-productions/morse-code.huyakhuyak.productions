@@ -8,7 +8,7 @@
 #
 # Authentication uses the Apple ID signed into Xcode. To use an App Store Connect API key
 # instead, export ASC_KEY_PATH (the .p8, kept outside the repo), ASC_KEY_ID and ASC_ISSUER_ID.
-set -euo pipefail
+set -Eeuo pipefail   # -E: the ERR trap below must fire inside run()
 cd "$(dirname "$0")/.."
 
 DRY_RUN=0
@@ -45,14 +45,21 @@ run() {
   fi
 }
 
+# The bump is committed only after the upload succeeds, so a failed archive or upload leaves
+# no stray build commit; the trap puts the project file back.
+restore_bump() { git checkout --quiet -- MorseLamp.xcodeproj/project.pbxproj; }
+if [[ $DRY_RUN -eq 0 ]]; then trap restore_bump ERR; fi
+
 run xcrun agvtool next-version -all
-run git add MorseLamp.xcodeproj/project.pbxproj
-run git commit --quiet --message "🔖 Build $NEXT" \
-  --message "Build number bumped by scripts/release.sh before archiving for TestFlight."
 run xcodebuild archive -project MorseLamp.xcodeproj -scheme MorseLamp \
   -destination 'generic/platform=iOS' -archivePath "$ARCHIVE" -allowProvisioningUpdates ${AUTH[@]+"${AUTH[@]}"}
 run xcodebuild -exportArchive -archivePath "$ARCHIVE" \
   -exportOptionsPlist scripts/ExportOptions.plist -exportPath "$ARCHIVE.export" \
   -allowProvisioningUpdates ${AUTH[@]+"${AUTH[@]}"}
 
-if [[ $DRY_RUN -eq 0 ]]; then echo "Build $NEXT archived at $ARCHIVE"; fi
+trap - ERR
+run git add MorseLamp.xcodeproj/project.pbxproj
+run git commit --quiet --message "🔖 Build $NEXT" \
+  --message "Build number bumped by scripts/release.sh after uploading build $NEXT to TestFlight."
+
+if [[ $DRY_RUN -eq 0 ]]; then echo "Build $NEXT uploaded; archive at $ARCHIVE"; fi
