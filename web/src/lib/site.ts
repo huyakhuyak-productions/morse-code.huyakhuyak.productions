@@ -1,6 +1,8 @@
 export const SITE_URL = "https://morse-code.huyakhuyak.productions";
 export const TAGLINE = "Learn Morse code in idle minutes.";
 export const CONTACT = "mykola@socket.agency";
+/** App Store Connect record id; the Smart App Banner shows once the app is live. */
+export const APP_STORE_ID = "6824568488";
 export const SOURCE_URL = "https://github.com/huyakhuyak-productions/morse-code.huyakhuyak.productions";
 
 /**

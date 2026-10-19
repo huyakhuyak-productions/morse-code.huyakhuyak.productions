@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { CONTACT, GET_APP } from "../src/lib/site";
+import { APP_STORE_ID, CONTACT, GET_APP } from "../src/lib/site";
 
 const dist = join(import.meta.dir, "..", "dist");
 const pages = ["index.html", "privacy/index.html", "support/index.html"];
@@ -32,6 +32,13 @@ describe("built site", () => {
     expect(GET_APP.href.startsWith("https://")).toBe(true);
     expect(html("index.html")).toContain(`href="${GET_APP.href}"`);
     expect(html("index.html")).toContain(GET_APP.label);
+  });
+
+  test("every page carries the Smart App Banner for the App Store record", () => {
+    expect(APP_STORE_ID).toMatch(/^\d+$/);
+    for (const page of pages) {
+      expect(html(page)).toContain(`<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}">`);
+    }
   });
 
   test("privacy page names the contact", () => {

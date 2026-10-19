@@ -6,7 +6,7 @@ import "@/styles/lamp.css";
 import font500 from "@fontsource/archivo/files/archivo-latin-500-normal.woff2";
 import font600 from "@fontsource/archivo/files/archivo-latin-600-normal.woff2";
 import font900 from "@fontsource/archivo/files/archivo-latin-900-normal.woff2";
-import { TAGLINE } from "@/lib/site";
+import { APP_STORE_ID, TAGLINE } from "@/lib/site";
 
 interface Props {
   title: string;
@@ -60,9 +60,7 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
     <meta name="twitter:image:alt" content={ogImageAlt} />
-    <!-- Smart App Banner, once the App Store id exists:
-    <meta name="apple-itunes-app" content="app-id=APP_STORE_ID" />
-    -->
+    <meta name="apple-itunes-app" content={`app-id=${APP_STORE_ID}`} />
     <slot name="head" />
   </head>
   <body class="bg-bg text-fg">
