@@ -69,7 +69,9 @@ the project), commits `🔖 Build <n>`, archives for `generic/platform=iOS` into
 (`app-store-connect`, `destination upload`). `--dry-run` prints the commands. It authenticates
 with the Apple ID signed into Xcode; if that fails, export `ASC_KEY_PATH` (a `.p8` kept outside
 the repo), `ASC_KEY_ID` and `ASC_ISSUER_ID` and run it again. Marketing version is `1.0` until
-the owner raises it by hand.
+the owner raises it by hand. The App Store Connect record (id 6824568488) is named
+"Morse Lamp: Learn Morse Code" because "Morse Lamp" was taken; the bundle display name stays
+"Morse Lamp", and `web/src/lib/site.ts` carries the id for the Smart App Banner meta.
 
 ## Web page
 

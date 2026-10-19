@@ -4,11 +4,13 @@ Paste into App Store Connect. Limits: subtitle 30, promotional text 170, keyword
 
 ## Name
 
-Morse Lamp
+Morse Lamp: Learn Morse Code
+
+"Morse Lamp" alone is taken on the App Store. The name on the phone stays "Morse Lamp". App Store Connect id 6824568488.
 
 ## Subtitle
 
-Learn Morse in idle minutes
+Key it, hear it, unlock it
 
 ## Promotional text
 

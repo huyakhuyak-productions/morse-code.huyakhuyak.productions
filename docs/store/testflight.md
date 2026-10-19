@@ -8,9 +8,10 @@
 
 ## One-time setup (owner, App Store Connect web UI)
 
-- [ ] Apps → New App: platform iOS, name "Morse Lamp" (fallback "Morse Lamp: Learn Morse Code";
+- [x] Apps → New App: platform iOS, name "Morse Lamp: Learn Morse Code" ("Morse Lamp" was taken;
       the name on the phone stays "Morse Lamp"), primary language English (U.S.), bundle id
-      `productions.huyakhuyak.MorseLamp`, SKU `morse-lamp`.
+      `productions.huyakhuyak.MorseLamp`, SKU `morse-lamp`. Record id 6824568488. Done 2026-10-19;
+      build 2 was the first upload.
 - [ ] If `scripts/release.sh` cannot authenticate: Users and Access → Integrations → Team Keys,
       create a key with the App Manager role, save the `.p8` outside the repo, and run the
       script again with `ASC_KEY_PATH`, `ASC_KEY_ID` and `ASC_ISSUER_ID` exported.
