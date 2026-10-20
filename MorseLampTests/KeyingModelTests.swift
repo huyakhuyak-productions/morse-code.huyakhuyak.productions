@@ -125,7 +125,7 @@ struct KeyingModelTests {
             m.nextPrompt()
         }
         #expect(m.didFinishPractice)
-        #expect(app.state.progress.record("K", .keying).total == 30)  // 20 from the fixture plus 10 practice
+        #expect(app.state.progress.record("K", .keying).total == UnlockPace.standard.rule.newestFloor + 10)  // the fixture's rounds plus 10 practice
     }
 
     @Test func firstPromptStatusAndMutedStatus() {
@@ -175,7 +175,7 @@ struct KeyingModelTests {
         #expect(m.revealPending == "R")
         #expect(m.revealReady == "R")
         let (g, gapp) = makeKeying(fixture: "aboutToUnlock", guided: GuidedRounds(drill: .keying, character: "R", remaining: 3))
-        gapp.state.progress.log("M", .keying, correct: true)
+        gapp.state.progress.log("M", .keying, correct: true, rule: UnlockPace.standard.rule)
         let guided = KeyingModel(app: gapp, tone: gapp.tone, haptics: gapp.haptics, now: { 0 })
         #expect(guided.revealPending == nil)  // guided rounds come first
         _ = g

@@ -3,8 +3,8 @@ import Testing
 
 @Test func logIgnoresCharactersOutsideTheUnlockedSet() {
     var p = LearnerProgress.initial
-    p.log("R", .keying, correct: true)        // locked
-    p.log("k", .keying, correct: true)        // not a character in the table
+    p.log("R", .keying, correct: true, rule: UnlockPace.strict.rule)        // locked
+    p.log("k", .keying, correct: true, rule: UnlockPace.strict.rule)        // not a character in the table
     #expect(!p.hasLoggedAttempts)
     #expect(p.record("R", .keying).total == 0)
 }
@@ -17,6 +17,3 @@ import Testing
     #expect(s.plainText == "All 36 unlocked, 0 mastered.")
 }
 
-@Test func newestWeightThresholdIsItsOwnConstant() {
-    #expect(CharacterPicker.newestSeasoningAttempts == 20)
-}

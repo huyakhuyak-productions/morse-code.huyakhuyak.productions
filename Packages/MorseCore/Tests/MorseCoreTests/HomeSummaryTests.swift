@@ -20,11 +20,11 @@ import Testing
 @Test func slippingSentence() {
     var p = solidKM()
     for _ in 0..<5 { _ = p.unlockNext() }
-    for _ in 0..<20 { p.log("K", .keying, correct: false); p.log("M", .keying, correct: false) }
+    for _ in 0..<20 { p.log("K", .keying, correct: false, rule: UnlockPace.strict.rule); p.log("M", .keying, correct: false, rule: UnlockPace.strict.rule) }
     let s = HomeSummary(progress: p)
     #expect(s.kind == .slipping)
     #expect(s.plainText == "7 of 36 unlocked, 0 mastered. K and M have gone dim.")
-    for _ in 0..<20 { p.log("M", .keying, correct: true) }
+    for _ in 0..<20 { p.log("M", .keying, correct: true, rule: UnlockPace.strict.rule) }
     #expect(HomeSummary(progress: p).plainText.hasSuffix("K has gone dim."))
 }
 
@@ -33,8 +33,8 @@ import Testing
     for _ in 0..<5 { _ = p.unlockNext() }           // K M R S U A P
     for _ in 0..<20 {
         for c: Character in ["K", "M", "R"] {
-            p.log(c, .keying, correct: false)
-            p.log(c, .listening, correct: false)
+            p.log(c, .keying, correct: false, rule: UnlockPace.strict.rule)
+            p.log(c, .listening, correct: false, rule: UnlockPace.strict.rule)
         }
     }
     #expect(HomeSummary(progress: p).plainText.hasSuffix("K, M and R have gone dim."))
@@ -50,7 +50,7 @@ import Testing
 
 @Test func firstRunOnlyWhileNothingIsLogged() {
     var p = LearnerProgress.initial
-    p.log("K", .keying, correct: false)
+    p.log("K", .keying, correct: false, rule: UnlockPace.strict.rule)
     let s = HomeSummary(progress: p)
     #expect(s.kind == .normal)
     #expect(s.plainText == "2 of 36 unlocked, 0 mastered. R unlocks when your set is solid.")

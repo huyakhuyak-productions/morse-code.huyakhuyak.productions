@@ -4,13 +4,23 @@ import MorseCore
 @testable import MorseLamp
 
 struct StateStoreTests {
+    @Test func paceDefaultsToStandardAndSurvivesUnknownValues() throws {
+        #expect(Settings().pace == .standard)
+        let json = Data(#"{"settings":{"pace":"turbo","wpm":22}}"#.utf8)
+        let state = try JSONDecoder().decode(AppState.self, from: json)
+        #expect(state.settings.pace == .standard)
+        #expect(state.settings.wpm == 22)
+        let strict = Data(#"{"settings":{"pace":"strict"}}"#.utf8)
+        #expect(try JSONDecoder().decode(AppState.self, from: strict).settings.pace == .strict)
+    }
+
     @Test func fileStoreRoundTrips() throws {
         let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID()).json")
         let store = FileStateStore(url: url)
         #expect(try store.load() == nil)
         var s = AppState()
         s.settings.wpm = 22
-        s.progress.log("K", .keying, correct: true)
+        s.progress.log("K", .keying, correct: true, rule: UnlockPace.standard.rule)
         try store.save(s)
         #expect(try store.load() == s)
     }

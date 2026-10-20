@@ -108,7 +108,7 @@ struct ListeningModelTests {
         let (n, app) = makeListening(fixture: "aboutToUnlock")
         n.setAnswer("M")
         await n.appear()
-        app.state.progress.log("M", .keying, correct: true)  // the set is now solid
+        app.state.progress.log("M", .keying, correct: true, rule: UnlockPace.standard.rule)  // the set is now solid
         #expect(app.state.progress.pendingUnlock)
         await n.pick("M")
         #expect(n.revealPending == "R")
@@ -145,7 +145,7 @@ struct ListeningModelTests {
 
     @Test func pendingUnlockAtEntryParksForTheReveal() async {
         let (first, app) = makeListening(fixture: "aboutToUnlock")
-        app.state.progress.log("M", .keying, correct: true)
+        app.state.progress.log("M", .keying, correct: true, rule: UnlockPace.standard.rule)
         #expect(app.state.progress.pendingUnlock)
         _ = first
         let m = ListeningModel(app: app, tone: app.tone, haptics: app.haptics)

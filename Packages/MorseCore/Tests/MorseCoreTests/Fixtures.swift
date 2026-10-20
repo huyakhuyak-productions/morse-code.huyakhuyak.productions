@@ -5,8 +5,8 @@ func solidKM() -> LearnerProgress {
     var p = LearnerProgress.initial
     for _ in 0..<20 {
         for skill in Skill.allCases {
-            p.log("K", skill, correct: true)
-            p.log("M", skill, correct: true)
+            p.log("K", skill, correct: true, rule: UnlockPace.strict.rule)
+            p.log("M", skill, correct: true, rule: UnlockPace.strict.rule)
         }
     }
     return p

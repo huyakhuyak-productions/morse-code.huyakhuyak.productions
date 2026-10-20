@@ -9,7 +9,7 @@ struct RevealModelTests {
         let store = MemoryStateStore()
         let app = AppModel(store: store, launch: .init(arguments: ["MorseLamp", "--fixture", "aboutToUnlock", "--rng-seed", "1", "--silent-audio"]))
         app.state.settings.wpm = 30  // short signals
-        app.state.progress.log("M", .keying, correct: true)
+        app.state.progress.log("M", .keying, correct: true, rule: UnlockPace.standard.rule)
         return (app, store)
     }
 

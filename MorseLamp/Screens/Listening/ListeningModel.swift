@@ -59,7 +59,7 @@ final class ListeningModel {
             if let first = app.launch.firstTarget, app.state.progress.unlocked.contains(first) {
                 answer = first
             } else {
-                answer = CharacterPicker.pick(from: app.state.progress, skill: .listening, avoiding: nil, using: &app.rng)
+                answer = CharacterPicker.pick(from: app.state.progress, skill: .listening, avoiding: nil, rule: app.rule, using: &app.rng)
             }
             // The rule became true during practice, or the app closed mid-hold: the reveal comes before any round.
             if app.state.progress.pendingUnlock {
@@ -146,7 +146,7 @@ final class ListeningModel {
             phase = .right
             status = "\(answer)  \(code.display)"
             if shouldLog {
-                app.state.progress.log(answer, .listening, correct: true)
+                app.state.progress.log(answer, .listening, correct: true, rule: app.rule)
                 if app.state.progress.pendingUnlock, mode == .normal {
                     revealPending = app.state.progress.next
                 }
@@ -155,7 +155,7 @@ final class ListeningModel {
         } else {
             phase = .wrong(picked: picked)
             status = "It was \(answer), not \(picked)."
-            if shouldLog { app.state.progress.log(answer, .listening, correct: false) }
+            if shouldLog { app.state.progress.log(answer, .listening, correct: false, rule: app.rule) }
             announce(status)
         }
         advanceMode()
@@ -207,7 +207,7 @@ final class ListeningModel {
         case .guided(let character, _):
             answer = character
         case .normal:
-            answer = CharacterPicker.pick(from: app.state.progress, skill: .listening, avoiding: answer, using: &app.rng)
+            answer = CharacterPicker.pick(from: app.state.progress, skill: .listening, avoiding: answer, rule: app.rule, using: &app.rng)
         }
         prepareRound()
     }

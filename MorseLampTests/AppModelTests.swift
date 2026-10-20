@@ -31,9 +31,10 @@ struct AppModelTests {
 
     @Test func aboutToUnlockFixtureUnlocksOnOneMoreKeying() {
         var s = LaunchConfiguration.fixtures["aboutToUnlock"]!()
-        #expect(!s.progress.isSetSolid)
-        s.progress.log("M", .keying, correct: true)
+        #expect(!s.progress.isSetSolid(UnlockPace.standard.rule))
+        s.progress.log("M", .keying, correct: true, rule: UnlockPace.standard.rule)
         #expect(s.progress.pendingUnlock)
+        #expect(AppModel(store: MemoryStateStore(), launch: .init(arguments: [])).rule == UnlockPace.standard.rule)
     }
 
     @Test func loggingSubsystemIsTheBundleIdentifier() {

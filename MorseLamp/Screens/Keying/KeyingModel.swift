@@ -71,7 +71,7 @@ final class KeyingModel {
             if let first = app.launch.firstTarget, app.state.progress.unlocked.contains(first) {
                 target = first
             } else {
-                target = CharacterPicker.pick(from: app.state.progress, skill: .keying, avoiding: nil, using: &app.rng)
+                target = CharacterPicker.pick(from: app.state.progress, skill: .keying, avoiding: nil, rule: app.rule, using: &app.rng)
             }
             // The rule became true during practice, or the app closed mid-hold: the reveal fires on this prompt.
             if app.state.progress.pendingUnlock {
@@ -174,7 +174,7 @@ final class KeyingModel {
             session.estimator.learn(presses: presses, elements: elements)
             app.state.estimator = session.estimator
             if shouldLog {
-                app.state.progress.log(target, .keying, correct: true)
+                app.state.progress.log(target, .keying, correct: true, rule: app.rule)
                 if app.state.progress.pendingUnlock, mode == .normal {
                     revealPending = app.state.progress.next
                 }
@@ -186,7 +186,7 @@ final class KeyingModel {
             let element = fault.element == .dash ? "Dash" : "Dot"
             let problem = fault.problem == .tooShort ? "short" : "long"
             status = "Right pattern. \(element) \(fault.ordinal) was too \(problem)."
-            if shouldLog { app.state.progress.log(target, .keying, correct: false) }
+            if shouldLog { app.state.progress.log(target, .keying, correct: false, rule: app.rule) }
             hintedRetry = true
             announce(status)
         } else {
@@ -194,7 +194,7 @@ final class KeyingModel {
             hint = code
             status = "\(target) is \(code.display)"
             shakeCount += 1
-            if shouldLog { app.state.progress.log(target, .keying, correct: false) }
+            if shouldLog { app.state.progress.log(target, .keying, correct: false, rule: app.rule) }
             hintedRetry = true
             announce("Missed. \(status)")
         }
@@ -257,7 +257,7 @@ final class KeyingModel {
             if hintedRetry || revealPending != nil {
                 // Same target: a hinted retry keeps its hint; a pending reveal takes over from here.
             } else {
-                target = CharacterPicker.pick(from: app.state.progress, skill: .keying, avoiding: target, using: &app.rng)
+                target = CharacterPicker.pick(from: app.state.progress, skill: .keying, avoiding: target, rule: app.rule, using: &app.rng)
                 hint = nil
             }
         }

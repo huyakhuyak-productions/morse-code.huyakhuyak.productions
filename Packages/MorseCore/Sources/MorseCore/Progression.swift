@@ -70,8 +70,8 @@ public struct SkillRecord: Sendable, Equatable, Codable {
 /// Which characters are unlocked and how accurate the learner is in each.
 public struct LearnerProgress: Sendable, Equatable, Codable {
     public static let perSkillWindow = 20
-    public static let setWindow = 50
-    public static let setFloor = 20
+    /// How many set-wide outcomes are stored; a rule's window is a suffix of these.
+    public static let storedSetWindow = 50
 
     /// K and M unlocked, nothing logged.
     public static let initial = LearnerProgress()
@@ -84,7 +84,7 @@ public struct LearnerProgress: Sendable, Equatable, Codable {
     /// The unlock rule became true on a logged correct answer and the reveal has not run yet.
     public private(set) var pendingUnlock = false
     private var records: [String: SkillRecord] = [:]
-    /// Last 50 outcomes across the whole set and both skills, oldest first.
+    /// Last `storedSetWindow` outcomes across the whole set and both skills, oldest first.
     private var recentAcrossSet: [Bool] = []
 
     private init() {}
@@ -103,7 +103,7 @@ public struct LearnerProgress: Sendable, Equatable, Codable {
         let raw = try c.decodeIfPresent([String: SkillRecord].self, forKey: .records) ?? [:]
         records = raw.filter { Self.isValidKey($0.key) }
         let across = try c.decodeIfPresent([Bool].self, forKey: .recentAcrossSet) ?? []
-        recentAcrossSet = Array(across.suffix(Self.setWindow))
+        recentAcrossSet = Array(across.suffix(Self.storedSetWindow))
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -168,29 +168,41 @@ public struct LearnerProgress: Sendable, Equatable, Codable {
 
     // MARK: Unlock rule
 
+    /// The latest `window` outcomes across the whole set and both skills, oldest first.
+    public func recentOutcomes(last window: Int) -> [Bool] {
+        Array(recentAcrossSet.suffix(window))
+    }
+
     /// 1. every unlocked character at least "nearly" in both skills;
-    /// 2. the newest has at least 20 logged attempts in each skill;
-    /// 3. accuracy over the last 50 attempts across the set (at least 20 available) is ≥ 0.90.
-    public var isSetSolid: Bool {
+    /// 2. the newest has at least `rule.newestFloor` logged attempts in each skill;
+    /// 3. accuracy over the last `rule.setWindow` attempts across the set (at least
+    ///    `rule.setFloor` available) is at least `rule.accuracy`.
+    public func isSetSolid(_ rule: UnlockRule) -> Bool {
         let allNearly = unlocked.allSatisfy { c in Skill.allCases.allSatisfy { level(of: c, in: $0) >= .nearly } }
-        let newestSeasoned = Skill.allCases.allSatisfy { record(newest, $0).total >= Self.setFloor }
-        let enough = recentAcrossSet.count >= Self.setFloor
-        let correct = recentAcrossSet.lazy.filter { $0 }.count
-        let accurate = enough && Double(correct) / Double(recentAcrossSet.count) >= 0.90
+        let newestSeasoned = Skill.allCases.allSatisfy { record(newest, $0).total >= rule.newestFloor }
+        let window = recentOutcomes(last: rule.setWindow)
+        let correct = window.lazy.filter { $0 }.count
+        let accurate = window.count >= rule.setFloor && Double(correct) / Double(window.count) >= rule.accuracy
         return allNearly && newestSeasoned && accurate
     }
 
     /// Logs one attempt. A correct answer that makes the set solid flags the pending unlock.
     /// Only unlocked characters can be drilled, so anything else is ignored rather than
     /// inflating the set-wide accuracy.
-    public mutating func log(_ character: Character, _ skill: Skill, correct: Bool) {
+    public mutating func log(_ character: Character, _ skill: Skill, correct: Bool, rule: UnlockRule) {
         guard unlocked.contains(character) else { return }
         var rec = record(character, skill)
         rec.append(correct)
         records[Self.key(character, skill)] = rec
         recentAcrossSet.append(correct)
-        if recentAcrossSet.count > Self.setWindow { recentAcrossSet.removeFirst(recentAcrossSet.count - Self.setWindow) }
-        if correct && !isComplete && isSetSolid { pendingUnlock = true }
+        if recentAcrossSet.count > Self.storedSetWindow { recentAcrossSet.removeFirst(recentAcrossSet.count - Self.storedSetWindow) }
+        if correct { refreshPendingUnlock(rule: rule) }
+    }
+
+    /// Flags the pending unlock when the set is solid under `rule`. Never clears it, so a
+    /// stricter rule cannot take back an unlock the learner has already earned.
+    public mutating func refreshPendingUnlock(rule: UnlockRule) {
+        if !isComplete && isSetSolid(rule) { pendingUnlock = true }
     }
 
     /// Unlocks the next character and clears the pending flag. Nil when everything is unlocked.

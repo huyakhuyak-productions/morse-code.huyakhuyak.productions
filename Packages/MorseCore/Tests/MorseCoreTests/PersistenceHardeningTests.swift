@@ -29,7 +29,7 @@ private func decodeProgress(_ json: String) throws -> LearnerProgress {
     let p = try decodeProgress(#"{"unlockedCount":2,"records":{"K/keying":{"recent":[\#(recent)],"total":25}},"recentAcrossSet":[\#(across)]}"#)
     #expect(p.record("K", .keying).recent.count == 20)
     #expect(p.record("K", .keying).total == 25)
-    #expect(!p.isSetSolid)
+    #expect(!p.isSetSolid(UnlockPace.strict.rule))
 }
 
 @Test func decodingDropsRecordsForUnknownCharacters() throws {

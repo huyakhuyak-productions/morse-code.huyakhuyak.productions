@@ -9,7 +9,7 @@ import Testing
     #expect(p.newest == "M")
     #expect(p.locked.count == 34)
     #expect(p.level(of: "K") == .new)
-    #expect(!p.isSetSolid)
+    #expect(!p.isSetSolid(UnlockPace.strict.rule))
     #expect(!p.pendingUnlock)
 }
 
@@ -25,8 +25,8 @@ import Testing
 
 @Test func recentWindowIsTwenty() {
     var p = LearnerProgress.initial
-    for _ in 0..<25 { p.log("K", .keying, correct: false) }
-    for _ in 0..<20 { p.log("K", .keying, correct: true) }
+    for _ in 0..<25 { p.log("K", .keying, correct: false, rule: UnlockPace.strict.rule) }
+    for _ in 0..<20 { p.log("K", .keying, correct: true, rule: UnlockPace.strict.rule) }
     #expect(p.record("K", .keying).recent.count == 20)
     #expect(p.record("K", .keying).total == 45)
     #expect(p.record("K", .keying).correctRecent == 20)
@@ -36,20 +36,20 @@ import Testing
 
 @Test func setIsNotSolidBelowTwentyAttempts() {    // Review Focus 2
     var p = LearnerProgress.initial
-    for _ in 0..<6 { p.log("K", .keying, correct: true); p.log("M", .keying, correct: true) }
-    #expect(!p.isSetSolid)
+    for _ in 0..<6 { p.log("K", .keying, correct: true, rule: UnlockPace.strict.rule); p.log("M", .keying, correct: true, rule: UnlockPace.strict.rule) }
+    #expect(!p.isSetSolid(UnlockPace.strict.rule))
 }
 
 @Test func unlockRuleNeedsBothSkillsAndTwentyOnNewest() {
     var p = LearnerProgress.initial
-    for _ in 0..<20 { p.log("K", .keying, correct: true); p.log("M", .keying, correct: true) }
-    #expect(!p.isSetSolid)                          // listening is still "new"
-    for _ in 0..<19 { p.log("K", .listening, correct: true); p.log("M", .listening, correct: true) }
-    #expect(!p.isSetSolid)                          // newest (M) has 19 listening attempts
-    p.log("K", .listening, correct: true)
-    #expect(!p.isSetSolid)
-    p.log("M", .listening, correct: true)
-    #expect(p.isSetSolid)
+    for _ in 0..<20 { p.log("K", .keying, correct: true, rule: UnlockPace.strict.rule); p.log("M", .keying, correct: true, rule: UnlockPace.strict.rule) }
+    #expect(!p.isSetSolid(UnlockPace.strict.rule))                          // listening is still "new"
+    for _ in 0..<19 { p.log("K", .listening, correct: true, rule: UnlockPace.strict.rule); p.log("M", .listening, correct: true, rule: UnlockPace.strict.rule) }
+    #expect(!p.isSetSolid(UnlockPace.strict.rule))                          // newest (M) has 19 listening attempts
+    p.log("K", .listening, correct: true, rule: UnlockPace.strict.rule)
+    #expect(!p.isSetSolid(UnlockPace.strict.rule))
+    p.log("M", .listening, correct: true, rule: UnlockPace.strict.rule)
+    #expect(p.isSetSolid(UnlockPace.strict.rule))
     #expect(p.pendingUnlock)
     #expect(p.unlockNext() == "R")
     #expect(p.unlockedCount == 3)
@@ -58,8 +58,8 @@ import Testing
 
 @Test func setAccuracyUsesLastFiftyAcrossSkills() {
     var p = solidKM()                               // 80 correct logged
-    for _ in 0..<6 { p.log("K", .keying, correct: false) }   // last 50: 44 correct → 0.88
-    #expect(!p.isSetSolid)
+    for _ in 0..<6 { p.log("K", .keying, correct: false, rule: UnlockPace.strict.rule) }   // last 50: 44 correct → 0.88
+    #expect(!p.isSetSolid(UnlockPace.strict.rule))
 }
 
 @Test func unlockNextClearsPending() {
@@ -67,21 +67,21 @@ import Testing
     #expect(p.pendingUnlock)
     _ = p.unlockNext()
     #expect(!p.pendingUnlock)
-    p.log("K", .keying, correct: false)             // an incorrect answer never sets it
+    p.log("K", .keying, correct: false, rule: UnlockPace.strict.rule)             // an incorrect answer never sets it
     #expect(!p.pendingUnlock)
 }
 
 @Test func pendingUnlockStaysWhileCompleteIsFalseOnly() {
     var p = LearnerProgress.initial
     for _ in 0..<34 { _ = p.unlockNext() }
-    p.log("K", .keying, correct: true)
+    p.log("K", .keying, correct: true, rule: UnlockPace.strict.rule)
     #expect(!p.pendingUnlock)                       // nothing left to unlock
 }
 
 @Test func slippingExcludesTwoNewest() {
     var p = solidKM()
     _ = p.unlockNext(); _ = p.unlockNext()          // K M R S; newest two: R, S
-    for _ in 0..<20 { p.log("K", .keying, correct: false) }
+    for _ in 0..<20 { p.log("K", .keying, correct: false, rule: UnlockPace.strict.rule) }
     #expect(p.slipping == ["K"])
     #expect(p.masteredCount == 1)                   // M
 }
@@ -90,9 +90,9 @@ import Testing
     var p = solidKM()
     for _ in 0..<5 { _ = p.unlockNext() }           // R S U A P unlocked with no attempts
     #expect(p.slipping.isEmpty)
-    for _ in 0..<4 { p.log("R", .keying, correct: false); p.log("R", .listening, correct: false) }
+    for _ in 0..<4 { p.log("R", .keying, correct: false, rule: UnlockPace.strict.rule); p.log("R", .listening, correct: false, rule: UnlockPace.strict.rule) }
     #expect(p.slipping.isEmpty)                     // 4 attempts: still not a measurement
-    p.log("R", .keying, correct: false); p.log("R", .listening, correct: false)
+    p.log("R", .keying, correct: false, rule: UnlockPace.strict.rule); p.log("R", .listening, correct: false, rule: UnlockPace.strict.rule)
     #expect(p.slipping == ["R"])
 }
 

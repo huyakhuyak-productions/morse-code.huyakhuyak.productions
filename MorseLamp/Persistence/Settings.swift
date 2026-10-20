@@ -1,3 +1,4 @@
+import MorseCore
 import SwiftUI
 
 /// How the listening drill asks for the answer.
@@ -32,6 +33,8 @@ nonisolated struct Settings: Codable, Equatable, Sendable {
     var theme = Theme.system
     /// Show codes on locked cells and the next cell.
     var codesOnLocked = false
+    /// How quickly new characters unlock.
+    var pace = UnlockPace.standard
 
     init() {}
 
@@ -45,9 +48,11 @@ nonisolated struct Settings: Codable, Equatable, Sendable {
         haptics = try c.decodeIfPresent(Bool.self, forKey: .haptics) ?? haptics
         theme = try c.decodeIfPresent(Theme.self, forKey: .theme) ?? theme
         codesOnLocked = try c.decodeIfPresent(Bool.self, forKey: .codesOnLocked) ?? codesOnLocked
+        // An unknown value from a newer build falls back instead of failing the whole file.
+        pace = (try? c.decodeIfPresent(UnlockPace.self, forKey: .pace)) ?? pace
     }
 
     private enum CodingKeys: String, CodingKey {
-        case strictTiming, answerMode, wpm, pitchHz, haptics, theme, codesOnLocked
+        case strictTiming, answerMode, wpm, pitchHz, haptics, theme, codesOnLocked, pace
     }
 }

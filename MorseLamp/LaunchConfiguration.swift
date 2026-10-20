@@ -54,15 +54,16 @@ nonisolated extension LaunchConfiguration {
         },
     ]
 
-    /// K and M with 20 correct attempts in each skill. With the flag, M keying stops at 19, so
-    /// one more correct M keying makes the set solid.
+    /// K and M with the Standard newest-letter floor of correct attempts in each skill. With the
+    /// flag, M keying stops one short, so one more correct M keying makes the set solid at Standard.
     private static func solidKM(skippingLastMKeying: Bool) -> LearnerProgress {
         var progress = LearnerProgress.initial
-        for round in 0..<20 {
+        let rule = UnlockPace.standard.rule
+        for round in 0..<rule.newestFloor {
             for skill in Skill.allCases {
-                progress.log("K", skill, correct: true)
-                if skippingLastMKeying && skill == .keying && round == 19 { continue }
-                progress.log("M", skill, correct: true)
+                progress.log("K", skill, correct: true, rule: rule)
+                if skippingLastMKeying && skill == .keying && round == rule.newestFloor - 1 { continue }
+                progress.log("M", skill, correct: true, rule: rule)
             }
         }
         return progress

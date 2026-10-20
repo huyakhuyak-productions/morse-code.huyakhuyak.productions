@@ -17,12 +17,9 @@ public struct SeededGenerator: RandomNumberGenerator, Sendable {
 
 /// Which character to drill next, which answers to offer, which distractors to show.
 public enum CharacterPicker {
-    /// Attempts in a skill after which the newest character stops being favoured.
-    public static let newestSeasoningAttempts = 20
-
-    /// The newest character weighs 8 until it has 20 attempts in the skill; others weigh 4 − level (minimum 1).
-    public static func weight(of character: Character, in progress: LearnerProgress, skill: Skill) -> Int {
-        if character == progress.newest && progress.record(character, skill).total < newestSeasoningAttempts {
+    /// The newest character weighs 8 until it has `rule.newestFloor` attempts in the skill; others weigh 4 − level (minimum 1).
+    public static func weight(of character: Character, in progress: LearnerProgress, skill: Skill, rule: UnlockRule) -> Int {
+        if character == progress.newest && progress.record(character, skill).total < rule.newestFloor {
             return 8
         }
         return max(1, 4 - progress.level(of: character, in: skill).rawValue)
@@ -33,13 +30,14 @@ public enum CharacterPicker {
         from progress: LearnerProgress,
         skill: Skill,
         avoiding previous: Character?,
+        rule: UnlockRule,
         using rng: inout some RandomNumberGenerator
     ) -> Character {
         var candidates = progress.unlocked
         if let previous, candidates.count > 1 {
             candidates.removeAll { $0 == previous }
         }
-        let weights = candidates.map { weight(of: $0, in: progress, skill: skill) }
+        let weights = candidates.map { weight(of: $0, in: progress, skill: skill, rule: rule) }
         var roll = Int.random(in: 0..<weights.reduce(0, +), using: &rng)
         for (candidate, weight) in zip(candidates, weights) {
             roll -= weight

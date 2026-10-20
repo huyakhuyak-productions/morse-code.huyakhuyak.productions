@@ -12,25 +12,26 @@ import Testing
 
 @Test func weightsFollowSpec() {
     var p = LearnerProgress.initial
-    #expect(CharacterPicker.weight(of: "M", in: p, skill: .keying) == 8)     // newest, < 20 attempts
-    #expect(CharacterPicker.weight(of: "K", in: p, skill: .keying) == 4)     // level new → 4 − 0
-    for _ in 0..<20 { p.log("M", .keying, correct: true); p.log("K", .keying, correct: true) }
-    #expect(CharacterPicker.weight(of: "M", in: p, skill: .keying) == 1)     // mastered → 4 − 3
-    #expect(CharacterPicker.weight(of: "K", in: p, skill: .keying) == 1)
-    #expect(CharacterPicker.weight(of: "M", in: p, skill: .listening) == 8)  // listening still < 20
+    let rule = UnlockPace.strict.rule
+    #expect(CharacterPicker.weight(of: "M", in: p, skill: .keying, rule: rule) == 8)     // newest, < 20 attempts
+    #expect(CharacterPicker.weight(of: "K", in: p, skill: .keying, rule: rule) == 4)     // level new → 4 − 0
+    for _ in 0..<20 { p.log("M", .keying, correct: true, rule: UnlockPace.strict.rule); p.log("K", .keying, correct: true, rule: UnlockPace.strict.rule) }
+    #expect(CharacterPicker.weight(of: "M", in: p, skill: .keying, rule: rule) == 1)     // mastered → 4 − 3
+    #expect(CharacterPicker.weight(of: "K", in: p, skill: .keying, rule: rule) == 1)
+    #expect(CharacterPicker.weight(of: "M", in: p, skill: .listening, rule: rule) == 8)  // listening still < 20
 }
 
 @Test func pickAvoidsImmediateRepeatWhenPossible() {
     var rng = SeededGenerator(seed: 1)
     for _ in 0..<50 {
-        #expect(CharacterPicker.pick(from: .initial, skill: .keying, avoiding: "K", using: &rng) == "M")
+        #expect(CharacterPicker.pick(from: .initial, skill: .keying, avoiding: "K", rule: UnlockPace.strict.rule, using: &rng) == "M")
     }
 }
 
 @Test func pickRespectsWeightsRoughly() {
     var rng = SeededGenerator(seed: 2)
     var m = 0
-    for _ in 0..<1000 where CharacterPicker.pick(from: .initial, skill: .keying, avoiding: nil, using: &rng) == "M" { m += 1 }
+    for _ in 0..<1000 where CharacterPicker.pick(from: .initial, skill: .keying, avoiding: nil, rule: UnlockPace.strict.rule, using: &rng) == "M" { m += 1 }
     #expect(m > 550 && m < 780)                      // expected 8/12 ≈ 667
 }
 
@@ -75,4 +76,12 @@ import Testing
     let new = p.unlockNext()!                         // "4"
     let d = CharacterPicker.distractors(for: new, progress: p, using: &rng)
     #expect(!d.contains("K") && !d.contains("M"))     // mastered letters are never the fill while "new" ones exist
+}
+
+@Test func newestCutoffFollowsTheRule() {
+    var p = LearnerProgress.initial
+    for _ in 0..<8 { p.log("M", .keying, correct: true, rule: UnlockPace.standard.rule) }
+    #expect(CharacterPicker.weight(of: "M", in: p, skill: .keying, rule: UnlockPace.strict.rule) == 8)
+    let level = p.level(of: "M", in: .keying).rawValue
+    #expect(CharacterPicker.weight(of: "M", in: p, skill: .keying, rule: UnlockPace.standard.rule) == max(1, 4 - level))
 }

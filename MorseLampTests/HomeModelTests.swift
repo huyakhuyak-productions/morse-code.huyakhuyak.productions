@@ -20,9 +20,9 @@ struct HomeModelTests {
 
     @Test func sheetLinesCountRecentAttempts() {
         var p = LearnerProgress.initial
-        for i in 0..<7 { p.log("K", .keying, correct: i < 4) }
+        for i in 0..<7 { p.log("K", .keying, correct: i < 4, rule: UnlockPace.standard.rule) }
         #expect(HomeCells.skillLine(.keying, record: p.record("K", .keying)) == "Keying: 4 of 7 so far. Learning.")
-        for _ in 0..<20 { p.log("M", .listening, correct: true) }
+        for _ in 0..<20 { p.log("M", .listening, correct: true, rule: UnlockPace.standard.rule) }
         #expect(HomeCells.skillLine(.listening, record: p.record("M", .listening)) == "Listening: 20 of the last 20. Mastered.")
         #expect(HomeCells.skillLine(.listening, record: p.record("K", .listening)) == "Listening: 0 of 0 so far. New.")
     }

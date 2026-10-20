@@ -16,6 +16,8 @@ final class AppModel {
     let tone: any Tone
     let haptics = Haptics()
     let lamp = LampState()
+    /// The unlock rule the learner's pace setting selects.
+    var rule: UnlockRule { state.settings.pace.rule }
     /// Seeded when launched with `--rng-seed`, so drills replay the same prompts.
     @ObservationIgnored var rng: AnyRandomNumberGenerator
 
