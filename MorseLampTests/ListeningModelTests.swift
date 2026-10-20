@@ -155,4 +155,38 @@ struct ListeningModelTests {
         #expect(m.revealReady == "R")
         m.disappear()
     }
+
+    /// The keyingBehind shape: K and M seasoned in listening only, so listening more will not help.
+    @Test func nudgeFiresAfterTheHoldOnce() async {
+        let (first, app) = makeListening(fixture: "fresh")
+        _ = first
+        let rule = UnlockPace.standard.rule
+        var progress = LearnerProgress.initial
+        for _ in 0..<18 {
+            progress.log("K", .listening, correct: true, rule: rule)
+            progress.log("M", .listening, correct: true, rule: rule)
+        }
+        app.state.progress = progress
+        app.state.hasListened = true
+        let m = ListeningModel(app: app, tone: app.tone, haptics: app.haptics)
+        m.setAnswer("M")
+        await m.appear()
+        await m.pick("M")
+        #expect(m.nudgePending); #expect(!m.nudgeReady)
+        try? await Task.sleep(for: .milliseconds(1_300))
+        #expect(m.phase == .hold)
+        #expect(m.nudgeReady)
+        #expect(app.state.nudges == [Nudge(drill: .listening, character: "M")])
+        await m.resumeAfterNudge()
+        #expect(!m.nudgePending)
+        #expect(m.phase == .playing || m.phase == .awaiting)
+        m.disappear()
+    }
+
+    @Test func handOverKeepsToneRunning() {
+        let tone = StopCountingTone()
+        let (m, _) = makeListening(fixture: "fresh", tone: tone)
+        m.handOver(); m.disappear()
+        #expect(tone.stops == 0)
+    }
 }

@@ -34,6 +34,14 @@ struct StateStoreTests {
         #expect(state.hasKeyed)
         #expect(state.progress == .initial)
         #expect(state.estimator == DitEstimator())
+        #expect(state.nudges.isEmpty)
+    }
+
+    @Test func nudgesRoundTrip() throws {
+        var state = AppState()
+        state.nudges = [Nudge(drill: .keying, character: "M")]
+        let decoded = try JSONDecoder().decode(AppState.self, from: JSONEncoder().encode(state))
+        #expect(decoded == state)
     }
 
     /// An unreadable file is set aside, never silently overwritten by the next save.

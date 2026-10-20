@@ -51,8 +51,8 @@ private struct RootView: View {
                 }
                 .navigationDestination(for: Route.self) { route in
                     switch route {
-                    case .keying(let practice): KeyingView(practice: practice)
-                    case .listening: ListeningView()
+                    case .keying(let practice): KeyingView(practice: practice, path: $path)
+                    case .listening: ListeningView(path: $path)
                     case .settings: SettingsView()
                     }
                 }

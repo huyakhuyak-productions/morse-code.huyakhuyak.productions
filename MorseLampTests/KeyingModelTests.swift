@@ -2,6 +2,19 @@ import Testing
 import MorseCore
 @testable import MorseLamp
 
+/// Counts `stop()` calls, so a test can tell whether leaving the drill stopped the engine.
+@MainActor
+final class StopCountingTone: Tone {
+    private(set) var stops = 0
+    nonisolated init() {}
+    func start() async {}
+    func stop() { stops += 1 }
+    nonisolated func keyDown() {}
+    nonisolated func keyUp() {}
+    func play(_ schedule: PlaybackSchedule) async -> Bool { true }
+    func setPitch(_ hz: Double) {}
+}
+
 @MainActor
 struct KeyingModelTests {
     /// A keying model over a fixture app with a silent tone, a fixed 0.1 s dit and a frozen clock,
@@ -179,5 +192,36 @@ struct KeyingModelTests {
         let guided = KeyingModel(app: gapp, tone: gapp.tone, haptics: gapp.haptics, now: { 0 })
         #expect(guided.revealPending == nil)  // guided rounds come first
         _ = g
+    }
+
+    @Test func nudgeFiresAfterTheHoldOnce() async {
+        let (m, app) = makeKeying(fixture: "listeningBehind")
+        m.setTarget("M"); key(m, code: Morse.code(for: "M")!, dit: 0.1)
+        #expect(m.nudgePending); #expect(!m.nudgeReady)          // matched, still in the hold
+        try? await Task.sleep(for: .milliseconds(900))
+        #expect(m.nudgeReady)
+        m.dismissNudge()
+        #expect(!m.nudgeReady)
+        #expect(app.state.nudges.count == 1)
+        m.setTarget("K"); key(m, code: Morse.code(for: "K")!, dit: 0.1)
+        #expect(!m.nudgePending)
+    }
+
+    @Test func nudgeNeverFiresInPractice() {
+        let (m, _) = makeKeying(fixture: "listeningBehind", practice: "M")
+        key(m, code: Morse.code(for: "M")!, dit: 0.1)
+        #expect(!m.nudgePending)
+    }
+
+    /// `SilentTone.keyUp` (which `disappear` calls) also darkens the lamp, so the engine stop is counted directly.
+    @Test func handOverKeepsToneRunning() {
+        let app = AppModel(store: MemoryStateStore(), launch: .init(arguments: ["MorseLamp", "--fixture", "fresh", "--silent-audio"]))
+        let tone = StopCountingTone()
+        let m = KeyingModel(app: app, tone: tone, haptics: app.haptics, now: { 0 })
+        m.handOver(); m.disappear()
+        #expect(tone.stops == 0)
+        let plain = KeyingModel(app: app, tone: tone, haptics: app.haptics, now: { 0 })
+        plain.disappear()
+        #expect(tone.stops == 1)
     }
 }

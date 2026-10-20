@@ -33,6 +33,10 @@ final class ListeningModel {
     var revealPending: Character?
     /// The pending reveal once the answer's hold has run; the view presents it from here.
     var revealReady: Character? { phase == .hold ? revealPending : nil }
+    /// Set by a logged answer when the other drill is what holds the next letter back.
+    private(set) var nudgePending = false
+    /// The pending nudge once the answer's hold has run and no reveal is due; the view presents it from here.
+    var nudgeReady: Bool { phase == .hold && nudgePending && revealPending == nil }
     private(set) var answerMode: AnswerMode
 
     @ObservationIgnored private let app: AppModel
@@ -45,6 +49,8 @@ final class ListeningModel {
     @ObservationIgnored private var roundID = 0
     /// The first `appear()` plays the prepared round; a later one during `.playing` leaves the sound alone.
     @ObservationIgnored private var isFirstPlay = true
+    /// The nudge is handing over to the keying drill, which keeps the shared engine running.
+    @ObservationIgnored private var isHandingOver = false
 
     init(app: AppModel, tone: any Tone, haptics: Haptics) {
         self.app = app
@@ -77,12 +83,12 @@ final class ListeningModel {
 
     /// First entry plays the round. Returning from the background resumes by phase: a finished
     /// round moves on, an awaiting round replays, a sounding round is left to finish, and a pending
-    /// reveal parks the drill until the view hands over.
+    /// reveal or nudge parks the drill until the view hands over.
     func appear() async {
         haptics.isEnabled = app.state.settings.haptics
         await tone.start()
         tone.setPitch(app.state.settings.pitchHz)
-        if revealPending != nil {
+        if revealPending != nil || nudgePending {
             phase = .hold
             return
         }
@@ -104,8 +110,18 @@ final class ListeningModel {
     func disappear() {
         roundTask?.cancel()
         roundTask = nil
-        tone.stop()
+        if !isHandingOver { tone.stop() }
         app.save()
+    }
+
+    /// The learner took the nudge: the next `disappear()` leaves the engine to the keying drill.
+    func handOver() {
+        isHandingOver = true
+    }
+
+    /// Clears the nudge without starting a round; used when the drill is leaving.
+    func dismissNudge() {
+        nudgePending = false
     }
 
     // MARK: Rounds
@@ -158,6 +174,9 @@ final class ListeningModel {
             if shouldLog { app.state.progress.log(answer, .listening, correct: false, rule: app.rule) }
             announce(status)
         }
+        if shouldLog, mode == .normal, revealPending == nil {
+            nudgePending = app.recordNudgeIfDue(in: .listening)
+        }
         advanceMode()
         app.save()
         let wasWrong = !correct
@@ -172,8 +191,8 @@ final class ListeningModel {
                 try? await Task.sleep(for: Self.hold)
             }
             guard !Task.isCancelled else { return }
-            if self.revealPending != nil {
-                // The hold is over; the view hands over to the reveal.
+            if self.revealPending != nil || self.nudgePending {
+                // The hold is over; the view hands over to the reveal or the nudge.
                 self.phase = .hold
                 return
             }
@@ -192,6 +211,15 @@ final class ListeningModel {
         } else {
             mode = .normal
         }
+        nextRound()
+        await playRound()
+    }
+
+    /// "Keep listening": the nudge closed, the next round plays.
+    func resumeAfterNudge() async {
+        nudgePending = false
+        roundTask?.cancel()
+        roundTask = nil
         nextRound()
         await playRound()
     }

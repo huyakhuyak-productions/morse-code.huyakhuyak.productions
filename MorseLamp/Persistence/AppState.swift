@@ -37,12 +37,43 @@ nonisolated struct GuidedRounds: Codable, Equatable, Sendable {
     }
 }
 
+/// A "try the other drill" sheet already shown in `drill` while `character` was the newest letter.
+nonisolated struct Nudge: Codable, Equatable, Sendable {
+    var drill: Drill
+    var character: Character
+
+    private enum CodingKeys: String, CodingKey { case drill, character }
+
+    init(drill: Drill, character: Character) {
+        self.drill = drill
+        self.character = character
+    }
+
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        drill = try c.decode(Drill.self, forKey: .drill)
+        let text = try c.decode(String.self, forKey: .character)
+        guard text.count == 1, let first = text.first else {
+            throw DecodingError.dataCorruptedError(forKey: .character, in: c, debugDescription: "Expected one character, got \(text.debugDescription)")
+        }
+        character = first
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(drill, forKey: .drill)
+        try c.encode(String(character), forKey: .character)
+    }
+}
+
 /// Everything that survives a relaunch, in one document.
 nonisolated struct AppState: Codable, Equatable, Sendable {
     var progress = LearnerProgress.initial
     var settings = Settings()
     var estimator = DitEstimator()
     var guided: GuidedRounds? = nil
+    /// Nudges already shown, so each (drill, newest letter) pair gets one at most.
+    var nudges: [Nudge] = []
     /// The learner has submitted at least one keying attempt; the paddle hint is no longer needed.
     var hasKeyed = false
     var hasListened = false
@@ -57,12 +88,13 @@ nonisolated struct AppState: Codable, Equatable, Sendable {
         settings = try c.decodeIfPresent(Settings.self, forKey: .settings) ?? settings
         estimator = try c.decodeIfPresent(DitEstimator.self, forKey: .estimator) ?? estimator
         guided = try c.decodeIfPresent(GuidedRounds.self, forKey: .guided)
+        nudges = try c.decodeIfPresent([Nudge].self, forKey: .nudges) ?? nudges
         hasKeyed = try c.decodeIfPresent(Bool.self, forKey: .hasKeyed) ?? hasKeyed
         hasListened = try c.decodeIfPresent(Bool.self, forKey: .hasListened) ?? hasListened
         bluetoothNoticeShown = try c.decodeIfPresent(Bool.self, forKey: .bluetoothNoticeShown) ?? bluetoothNoticeShown
     }
 
     private enum CodingKeys: String, CodingKey {
-        case progress, settings, estimator, guided, hasKeyed, hasListened, bluetoothNoticeShown
+        case progress, settings, estimator, guided, nudges, hasKeyed, hasListened, bluetoothNoticeShown
     }
 }

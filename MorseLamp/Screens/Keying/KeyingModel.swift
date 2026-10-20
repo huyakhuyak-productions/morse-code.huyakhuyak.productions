@@ -36,6 +36,10 @@ final class KeyingModel {
     var revealPending: Character?
     /// The pending reveal once the match's hold has run; the view presents it from here.
     var revealReady: Character? { phase == .keying ? revealPending : nil }
+    /// Set by a logged attempt when the other drill is what holds the next letter back.
+    private(set) var nudgePending = false
+    /// The pending nudge once the attempt's hold has run and no reveal is due; the view presents it from here.
+    var nudgeReady: Bool { phase == .keying && nudgePending && revealPending == nil }
     private(set) var showsBluetoothNotice = false
     /// Increments on every miss; the view shakes the readout once per change.
     private(set) var shakeCount = 0
@@ -50,6 +54,8 @@ final class KeyingModel {
     @ObservationIgnored private var session: KeyingSession
     @ObservationIgnored private var hintedRetry = false
     @ObservationIgnored private var hasPressedThisVisit = false
+    /// The nudge is handing over to the listening drill, which keeps the shared engine running.
+    @ObservationIgnored private var isHandingOver = false
     @ObservationIgnored private var holdTask: Task<Void, Never>?
     @ObservationIgnored private var tickTask: Task<Void, Never>?
 
@@ -107,8 +113,18 @@ final class KeyingModel {
         keyed = []
         presses = []
         tone.keyUp()
-        tone.stop()
+        if !isHandingOver { tone.stop() }
         app.save()
+    }
+
+    /// The learner took the nudge: the next `disappear()` leaves the engine to the listening drill.
+    func handOver() {
+        isHandingOver = true
+    }
+
+    /// The nudge sheet closed; the prompt behind it is already on screen.
+    func dismissNudge() {
+        nudgePending = false
     }
 
     // MARK: Paddle
@@ -197,6 +213,9 @@ final class KeyingModel {
             if shouldLog { app.state.progress.log(target, .keying, correct: false, rule: app.rule) }
             hintedRetry = true
             announce("Missed. \(status)")
+        }
+        if shouldLog, mode == .normal, revealPending == nil {
+            nudgePending = app.recordNudgeIfDue(in: .keying)
         }
         advanceMode()
         app.save()

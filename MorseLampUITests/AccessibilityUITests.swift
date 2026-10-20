@@ -23,7 +23,7 @@ final class AccessibilityUITests: XCTestCase {
     /// The spec fixes two things the Dynamic Type check flags: every text stops growing at xxLarge
     /// ("partially unsupported"), and glyphs (cells, drill targets) do not scale at all. Body text
     /// that does not scale is still a failure.
-    private static func isByDesign(_ issue: XCUIAccessibilityAuditIssue) -> Bool {
+    static func isByDesign(_ issue: XCUIAccessibilityAuditIssue) -> Bool {
         guard issue.auditType == .dynamicType else { return false }
         if issue.compactDescription.contains("partially") { return true }
         let label = issue.element?.label ?? ""

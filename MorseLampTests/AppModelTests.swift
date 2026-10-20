@@ -43,6 +43,16 @@ struct AppModelTests {
         #expect(!s.hasListened)
     }
 
+    @Test func nudgeIsRecordedOncePerDrillAndLetter() {
+        let m = AppModel(store: MemoryStateStore(), launch: .init(arguments: ["MorseLamp", "--fixture", "listeningBehind"]))
+        #expect(m.recordNudgeIfDue(in: .keying))
+        #expect(m.state.nudges == [Nudge(drill: .keying, character: "M")])
+        #expect(!m.recordNudgeIfDue(in: .keying))
+        #expect(!m.recordNudgeIfDue(in: .listening))
+        m.resetProgress()
+        #expect(m.state.nudges.isEmpty)
+    }
+
     @Test func loggingSubsystemIsTheBundleIdentifier() {
         #expect(LampLog.subsystem == Bundle.main.bundleIdentifier)
     }

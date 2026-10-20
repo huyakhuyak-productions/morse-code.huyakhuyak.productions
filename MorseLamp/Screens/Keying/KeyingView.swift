@@ -4,9 +4,14 @@ import SwiftUI
 /// Target glyph, readout of what you keyed, hint, status, and the paddle.
 struct KeyingView: View {
     let practice: Character?
+    @Binding var path: [Route]
 
     @State private var model: KeyingModel?
     @State private var reveal: RevealModel?
+    @State private var showingNudge = false
+    /// "Listen now" was tapped: the sheet's dismissal must not resume this drill.
+    @State private var tookNudge = false
+    @AccessibilityFocusState private var promptFocused: Bool
 
     @Environment(AppModel.self) private var app
     @Environment(\.palette) private var palette
@@ -29,6 +34,21 @@ struct KeyingView: View {
             }
         }
         .animation(.lamp(0.32), value: reveal == nil)
+        .lampPresentation(isPresented: $showingNudge, onDismiss: {
+            guard !tookNudge else { return }
+            model?.dismissNudge()
+            promptFocused = true
+        }) {
+            if let next = app.state.progress.next {
+                NudgeSheet(isPresented: $showingNudge, from: .keying, next: next, character: app.nudgeCharacter) {
+                    tookNudge = true
+                    model?.handOver()
+                    model?.dismissNudge()
+                    guard !path.isEmpty else { return }
+                    path[path.count - 1] = .listening
+                }
+            }
+        }
         .toolbar(.hidden, for: .navigationBar)
         .task {
             let model = self.model ?? KeyingModel(app: app, tone: app.tone, haptics: app.haptics, practice: practice)
@@ -38,6 +58,9 @@ struct KeyingView: View {
         .onChange(of: model?.revealReady) { _, ready in
             guard let model, ready != nil, reveal == nil else { return }
             reveal = RevealModel(app: app, from: .keying, tone: model.tone, haptics: app.haptics)
+        }
+        .onChange(of: model?.nudgeReady) { _, ready in
+            if ready == true { showingNudge = true }
         }
         .onDisappear { model?.disappear() }
         .onBackgroundReturn(leave: { model?.disappear() }) {
@@ -62,6 +85,7 @@ struct KeyingView: View {
                 .scaleEffect(isMatched && !reduceMotion ? 1.03 : 1)
                 .animation(.lamp(0.2), value: isMatched)
                 .accessibilityIdentifier("target")
+                .accessibilityFocused($promptFocused)
             readout(model)
                 .frame(minHeight: 16)
                 .padding(.top, 24)
