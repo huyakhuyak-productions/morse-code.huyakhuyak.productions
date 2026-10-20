@@ -28,7 +28,7 @@ nonisolated enum SettingsCopy {
     }
 
     static let speedExplanation = "15 or above trains your ear best"
-    static let codesOnLockedExplanation = "Off is how Morse is taught: hear a letter before you see it."
+    static let showsCodesExplanation = "Off is how Morse is taught: hear a letter before you see it."
     static let relearnTitle = "Relearn my rhythm?"
     static let relearnMessage = "The key will measure your dot length again from your next matched characters."
     static let resetTitle = "Reset all progress?"
@@ -101,7 +101,7 @@ struct SettingsView: View {
                             case .light: "Light"
                             }
                         }
-                        LampSwitch("Codes on locked letters", explanation: SettingsCopy.codesOnLockedExplanation, isOn: $app.state.settings.codesOnLocked)
+                        LampSwitch("Codes on letters", explanation: SettingsCopy.showsCodesExplanation, isOn: $app.state.settings.showsCodes)
                     }
                     group("Progress") {
                         LampSegmented("Unlock pace", selection: $app.state.settings.pace, label: SettingsCopy.paceLabel)

@@ -29,7 +29,7 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Keyboard"].isSelected)
         XCTAssertTrue(app.staticTexts["The full grid every time."].waitForExistence(timeout: 2))
 
-        let codes = app.switches["Codes on locked letters"]
+        let codes = app.switches["Codes on letters"]
         app.swipeUp()
         XCTAssertTrue(codes.waitForExistence(timeout: 2))
         XCTAssertEqual(codes.value as? String, "off")

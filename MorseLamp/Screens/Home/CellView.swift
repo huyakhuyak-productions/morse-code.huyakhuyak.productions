@@ -8,7 +8,7 @@ nonisolated enum CellState: Equatable {
     case unlocked(Level)
 }
 
-/// Pure rules for the home grid: what a cell is, what it says, and whether its code shows.
+/// Pure rules for the home grid: what a cell is and what it says.
 nonisolated enum HomeCells {
     static func state(of character: Character, in progress: LearnerProgress, nextFraction: Double) -> CellState {
         if progress.unlocked.contains(character) {
@@ -38,14 +38,6 @@ nonisolated enum HomeCells {
         case .listenMore(let c): Caption(skill: .listening, text: "\(c) needs your ear")
         case .keyMore(let c): Caption(skill: .keying, text: "\(c) needs your hand")
         case .complete, .steady, .almost: nil
-        }
-    }
-
-    /// Unlocked cells always show their code; locked and next cells only when the setting says so.
-    static func showsCode(_ state: CellState, codesOnLocked: Bool) -> Bool {
-        switch state {
-        case .unlocked: true
-        case .locked, .next: codesOnLocked
         }
     }
 

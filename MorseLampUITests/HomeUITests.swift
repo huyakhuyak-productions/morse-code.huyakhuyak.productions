@@ -46,6 +46,34 @@ final class HomeUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Listen to M a few more times and R unlocks."].waitForExistence(timeout: 2))
     }
 
+    /// Off hides every letter's code, in the sheet too; the unlocked sheet keeps its play ring.
+    @MainActor
+    func testCodesSettingGovernsTheSheet() {
+        launch(fixture: "tenUnlocked")
+        let cell = app.buttons["R, new"]
+        XCTAssertTrue(cell.waitForExistence(timeout: 5))
+        cell.tap()
+        XCTAssertTrue(app.buttons["Practice R"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["lamp"].exists)
+        XCTAssertFalse(app.otherElements["code"].exists)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        XCTAssertTrue(app.buttons["Practice R"].waitForNonExistence(timeout: 2))
+
+        app.buttons["Settings"].tap()
+        let codes = app.switches["Codes on letters"]
+        app.swipeUp()
+        XCTAssertTrue(codes.waitForExistence(timeout: 2))
+        codes.tap()
+        XCTAssertEqual(codes.value as? String, "on")
+        app.buttons["back"].tap()
+
+        XCTAssertTrue(cell.waitForExistence(timeout: 5))
+        cell.tap()
+        XCTAssertTrue(app.buttons["Practice R"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.otherElements["code"].exists)
+        XCTAssertTrue(app.buttons["lamp"].exists)
+    }
+
     @MainActor
     func testHomeHasNoNextCellWhenComplete() {
         launch(fixture: "complete")

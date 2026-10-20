@@ -75,7 +75,17 @@ struct StateStoreTests {
         #expect(s.pitchHz == 600)
         #expect(s.haptics)
         #expect(s.theme == .system)
-        #expect(!s.codesOnLocked)
+        #expect(!s.showsCodes)
+    }
+
+    /// The codes switch kept its original storage key when it was renamed, so a saved file still applies.
+    @Test func showsCodesReadsTheOriginalKey() throws {
+        let json = Data(#"{"settings":{"codesOnLocked":true}}"#.utf8)
+        #expect(try JSONDecoder().decode(AppState.self, from: json).settings.showsCodes)
+        var settings = Settings()
+        settings.showsCodes = true
+        let encoded = try String(decoding: JSONEncoder().encode(settings), as: UTF8.self)
+        #expect(encoded.contains(#""codesOnLocked":true"#))
     }
 
     @Test func launchConfigurationParses() {

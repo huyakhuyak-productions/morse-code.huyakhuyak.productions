@@ -9,6 +9,10 @@ struct SettingsCopyTests {
         #expect(SettingsCopy.answerModeExplanation(.keyboard) == "The full grid every time.")
     }
 
+    @Test func showsCodesExplanation() {
+        #expect(SettingsCopy.showsCodesExplanation == "Off is how Morse is taught: hear a letter before you see it.")
+    }
+
     @Test func paceCopy() {
         #expect(UnlockPace.allCases.map(SettingsCopy.paceLabel) == ["Relaxed", "Standard", "Strict"])
         #expect(SettingsCopy.paceExplanation(.relaxed) == "New letters come quickly. Expect to revisit some.")

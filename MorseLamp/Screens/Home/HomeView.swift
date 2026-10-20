@@ -54,7 +54,7 @@ struct HomeView: View {
                     CellView(
                         character: character,
                         state: state,
-                        showsCode: HomeCells.showsCode(state, codesOnLocked: model.state.settings.codesOnLocked)
+                        showsCode: model.state.settings.showsCodes
                     ) {
                         sheetCharacter = character
                         showingSheet = true

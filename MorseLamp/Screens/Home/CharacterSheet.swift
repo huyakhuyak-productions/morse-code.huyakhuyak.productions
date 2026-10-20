@@ -1,8 +1,9 @@
 import MorseCore
 import SwiftUI
 
-/// The reference sheet for one cell: the glyph, its code, both skill lines, a play ring and Practice.
-/// For the next cell: the glyph and what to drill before it unlocks.
+/// The reference sheet for one cell: the glyph, both skill lines, a play ring and Practice, with the
+/// code when the setting shows codes. For the next cell: the glyph and what to drill before it
+/// unlocks; its code and play ring only when the setting shows codes.
 struct CharacterSheet: View {
     @State private var startedPractice = false
     @Binding var isPresented: Bool
@@ -16,16 +17,14 @@ struct CharacterSheet: View {
         LampSheet(isPresented: $isPresented, title: String(character), titleFont: LampFont.glyph(128), titleTracking: -0.05 * 128) {
             let outlook = model.outlook
             let state = HomeCells.state(of: character, in: model.state.progress, nextFraction: outlook.fraction)
-            let showsCode = HomeCells.showsCode(state, codesOnLocked: model.state.settings.codesOnLocked)
-            if showsCode, let code = Morse.code(for: character) {
+            let showsCode = model.state.settings.showsCodes
+            let code = Morse.code(for: character)
+            if showsCode, let code {
                 CodeView(code, scale: .hint, color: palette.fg)
-                HStack {
-                    Spacer()
-                    LampDisc(isLit: model.lamp.isLit, showsPlayMark: true, size: 96) { play(code) }
-                    Spacer()
-                }
+                    .accessibilityIdentifier("code")
             }
             if case .unlocked = state {
+                if let code { playRing(code) }
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(Skill.allCases, id: \.self) { skill in
                         CrossfadeText(HomeCells.skillLine(skill, record: model.state.progress.record(character, skill)))
@@ -39,6 +38,7 @@ struct CharacterSheet: View {
                     onPractice(character)
                 }
             } else {
+                if showsCode, let code { playRing(code) }
                 CrossfadeText(nextLine(outlook))
                     .font(LampFont.body(15, relativeTo: .subheadline))
                     .foregroundStyle(palette.fgDim)
@@ -77,6 +77,14 @@ struct CharacterSheet: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityHidden(true)
+    }
+
+    private func playRing(_ code: Code) -> some View {
+        HStack {
+            Spacer()
+            LampDisc(isLit: model.lamp.isLit, showsPlayMark: true, size: 96) { play(code) }
+            Spacer()
+        }
     }
 
     private func play(_ code: Code) {

@@ -31,8 +31,9 @@ nonisolated struct Settings: Codable, Equatable, Sendable {
     var pitchHz = 600.0
     var haptics = true
     var theme = Theme.system
-    /// Show codes on locked cells and the next cell.
-    var codesOnLocked = false
+    /// Show each letter's code in the grid and the letter sheet. Off is the Koch default: hear a
+    /// letter before you see it.
+    var showsCodes = false
     /// How quickly new characters unlock.
     var pace = UnlockPace.standard
 
@@ -47,12 +48,14 @@ nonisolated struct Settings: Codable, Equatable, Sendable {
         pitchHz = try c.decodeIfPresent(Double.self, forKey: .pitchHz) ?? pitchHz
         haptics = try c.decodeIfPresent(Bool.self, forKey: .haptics) ?? haptics
         theme = try c.decodeIfPresent(Theme.self, forKey: .theme) ?? theme
-        codesOnLocked = try c.decodeIfPresent(Bool.self, forKey: .codesOnLocked) ?? codesOnLocked
+        showsCodes = try c.decodeIfPresent(Bool.self, forKey: .showsCodes) ?? showsCodes
         // An unknown value from a newer build falls back instead of failing the whole file.
         pace = (try? c.decodeIfPresent(UnlockPace.self, forKey: .pace)) ?? pace
     }
 
     private enum CodingKeys: String, CodingKey {
-        case strictTiming, answerMode, wpm, pitchHz, haptics, theme, codesOnLocked, pace
+        case strictTiming, answerMode, wpm, pitchHz, haptics, theme, pace
+        /// The switch once governed locked letters only; the key stays so saved files still apply.
+        case showsCodes = "codesOnLocked"
     }
 }
