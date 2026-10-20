@@ -90,18 +90,22 @@ struct CodeView: View {
     }
 }
 
-/// 36 ticks, one per character in the Koch order: solid for unlocked, outlined for the next, dim for the rest.
+/// 36 ticks, one per character in the Koch order: solid for unlocked, outlined for the next
+/// (filling from the bottom with the unlock distance), dim for the rest.
 struct TickRow: View {
     let unlocked: Int
     let hasNext: Bool
+    /// The unlock distance, 0...1, drawn inside the next tick.
+    let nextFraction: Double
     /// The reveal: the tick that just turned solid is drawn in accent.
     var newestAccent = false
 
     @Environment(\.palette) private var palette
 
-    init(unlocked: Int, hasNext: Bool, newestAccent: Bool = false) {
+    init(unlocked: Int, hasNext: Bool, nextFraction: Double, newestAccent: Bool = false) {
         self.unlocked = unlocked
         self.hasNext = hasNext
+        self.nextFraction = nextFraction
         self.newestAccent = newestAccent
     }
 
@@ -112,7 +116,7 @@ struct TickRow: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(unlocked) of \(Morse.kochOrder.count) unlocked")
+        .accessibilityLabel(label)
         .accessibilityAddTraits(.isStaticText)
     }
 
@@ -122,10 +126,79 @@ struct TickRow: View {
         if index < unlocked {
             shape.fill(newestAccent && index == unlocked - 1 ? palette.accent : palette.fg).frame(width: 2, height: 10)
         } else if index == unlocked && hasNext {
-            shape.strokeBorder(palette.fgDim, lineWidth: 1).frame(width: 2, height: 10)
+            shape.strokeBorder(palette.fgDim, lineWidth: 1)
+                .overlay(alignment: .bottom) {
+                    shape.fill(palette.fg).frame(height: 10 * nextFraction).distanceAnimation(nextFraction)
+                }
+                .frame(width: 2, height: 10)
         } else {
             shape.fill(palette.muted2).frame(width: 2, height: 10)
         }
+    }
+
+    /// "7 of 36 unlocked", then ", next 60% there" once the distance reads above 0 %.
+    private var label: String {
+        let count = "\(unlocked) of \(Morse.kochOrder.count) unlocked"
+        guard hasNext, let distance = HomeCells.percentLabel(nextFraction) else { return count }
+        return "\(count), next \(distance)"
+    }
+}
+
+/// The grid cell's 14 pt rounded-rect ring from its top centre clockwise to `fraction`. SwiftUI's rounded-rect path
+/// starts at the middle of the right edge and runs clockwise, so the top centre sits at 0.75 of it
+/// for any size; the fill trims from there and wraps past the path's end.
+struct RingFill: InsettableShape {
+    var fraction: Double
+    private var inset: CGFloat = 0
+
+    init(fraction: Double) {
+        self.fraction = fraction
+    }
+
+    var animatableData: Double {
+        get { fraction }
+        set { fraction = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        let ring = RoundedRectangle(cornerRadius: 14 - inset, style: .continuous)
+            .path(in: rect.insetBy(dx: inset, dy: inset))
+        let start = 0.75
+        let end = start + min(max(fraction, 0), 1)
+        var path = ring.trimmedPath(from: start, to: min(end, 1))
+        if end > 1 { path.addPath(ring.trimmedPath(from: 0, to: end - 1)) }
+        return path
+    }
+
+    func inset(by amount: CGFloat) -> RingFill {
+        var shape = self
+        shape.inset += amount
+        return shape
+    }
+}
+
+extension View {
+    /// Animates a change of the unlock distance with the standard motion; under Reduce Motion
+    /// the old and new fills crossfade instead of the fill growing.
+    func distanceAnimation(_ fraction: Double) -> some View {
+        modifier(DistanceAnimation(fraction: fraction))
+    }
+}
+
+private struct DistanceAnimation: ViewModifier {
+    let fraction: Double
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        Group {
+            if reduceMotion {
+                content.id(fraction).transition(.opacity)
+            } else {
+                content
+            }
+        }
+        .animation(.lamp(0.32), value: fraction)
     }
 }
 

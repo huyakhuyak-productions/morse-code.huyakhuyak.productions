@@ -37,6 +37,12 @@ struct AppModelTests {
         #expect(AppModel(store: MemoryStateStore(), launch: .init(arguments: [])).rule == UnlockPace.standard.rule)
     }
 
+    @Test func listeningBehindFixtureIsSixtyPercentThere() {
+        let s = LaunchConfiguration.fixtures["listeningBehind"]!()
+        #expect(UnlockOutlook(progress: s.progress, rule: UnlockPace.standard.rule).percent == 60)
+        #expect(!s.hasListened)
+    }
+
     @Test func loggingSubsystemIsTheBundleIdentifier() {
         #expect(LampLog.subsystem == Bundle.main.bundleIdentifier)
     }

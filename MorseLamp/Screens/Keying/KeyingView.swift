@@ -53,7 +53,7 @@ struct KeyingView: View {
         let progress = app.state.progress
         let isMatched = model.phase == .matched
         return VStack(spacing: 0) {
-            DrillTopBar(unlocked: progress.unlockedCount, hasNext: progress.next != nil)
+            DrillTopBar(unlocked: progress.unlockedCount, hasNext: progress.next != nil, nextFraction: app.outlook.fraction)
             Spacer(minLength: 0)
             Text(String(model.target))
                 .font(LampFont.glyph(212))

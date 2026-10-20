@@ -3,26 +3,34 @@ import SwiftUI
 
 nonisolated enum CellState: Equatable {
     case locked
-    case next
+    /// `fraction`: the unlock distance, 0...1.
+    case next(fraction: Double)
     case unlocked(Level)
 }
 
 /// Pure rules for the home grid: what a cell is, what it says, and whether its code shows.
 nonisolated enum HomeCells {
-    static func state(of character: Character, in progress: LearnerProgress) -> CellState {
+    static func state(of character: Character, in progress: LearnerProgress, nextFraction: Double) -> CellState {
         if progress.unlocked.contains(character) {
             return .unlocked(progress.level(of: character))
         }
-        return progress.next == character ? .next : .locked
+        return progress.next == character ? .next(fraction: nextFraction) : .locked
     }
 
-    /// "K, mastered" / "P, unlocks next" / "Q, locked".
+    /// "K, mastered" / "P, unlocks next" / "P, unlocks next, 60% there" / "Q, locked".
     static func accessibilityLabel(_ character: Character, _ state: CellState) -> String {
         switch state {
         case .locked: "\(character), locked"
-        case .next: "\(character), unlocks next"
+        case .next(let fraction):
+            if let distance = percentLabel(fraction) { "\(character), unlocks next, \(distance)" } else { "\(character), unlocks next" }
         case .unlocked(let level): "\(character), \(name(of: level))"
         }
+    }
+
+    /// "60% there", floored to tens; nil while the distance still reads 0 %.
+    static func percentLabel(_ fraction: Double) -> String? {
+        let percent = UnlockOutlook.percent(of: fraction)
+        return percent > 0 ? "\(percent)% there" : nil
     }
 
     /// Unlocked cells always show their code; locked and next cells only when the setting says so.
@@ -66,7 +74,8 @@ nonisolated enum HomeCells {
     }
 }
 
-/// One grid cell: 66 pt tall, 14 pt radius, filled by level; locked cells fade to 22 %.
+/// One grid cell: 66 pt tall, 14 pt radius, filled by level; locked cells fade to 22 %; the next
+/// cell's ring fills clockwise from the top with the unlock distance.
 struct CellView: View {
     let character: Character
     let state: CellState
@@ -98,8 +107,11 @@ struct CellView: View {
             .frame(height: 66)
             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(fill))
             .overlay {
-                if state == .next {
+                if case .next(let fraction) = state {
                     RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(palette.muted2, lineWidth: 1.5)
+                    RingFill(fraction: fraction)
+                        .strokeBorder(palette.fg, lineWidth: 1.5)
+                        .distanceAnimation(fraction)
                 }
             }
             .opacity(state == .locked ? 0.22 : 1)

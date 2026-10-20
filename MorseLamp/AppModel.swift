@@ -18,6 +18,9 @@ final class AppModel {
     let lamp = LampState()
     /// The unlock rule the learner's pace setting selects.
     var rule: UnlockRule { state.settings.pace.rule }
+
+    /// How far the learner is from the next unlock under the current rule.
+    var outlook: UnlockOutlook { UnlockOutlook(progress: state.progress, rule: rule) }
     /// Seeded when launched with `--rng-seed`, so drills replay the same prompts.
     @ObservationIgnored var rng: AnyRandomNumberGenerator
 

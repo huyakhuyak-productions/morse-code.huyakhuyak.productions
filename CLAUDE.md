@@ -19,7 +19,7 @@ xcodebuild test -project MorseLamp.xcodeproj -scheme MorseLamp \
 - Do not edit source files while an `xcodebuild` run is in progress: the synchronized groups
   pick new files up at build time and a half-written test breaks the run.
 - Launch arguments for tests and screenshots live in `MorseLamp/LaunchConfiguration.swift`:
-  `--fixture <fresh|aboutToUnlock|tenUnlocked|complete>`, `--screen <keying|listening|settings|controls>`,
+  `--fixture <fresh|aboutToUnlock|tenUnlocked|listeningBehind|complete>`, `--screen <keying|listening|settings|controls>`,
   `--first-target <char>`, `--rng-seed <n>`, `--silent-audio`, `--reset-state`.
 
 ## Concurrency

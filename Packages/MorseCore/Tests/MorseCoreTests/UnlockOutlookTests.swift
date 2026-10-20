@@ -17,6 +17,7 @@ private func listeningBehind() -> LearnerProgress {   // 18 correct K and M keyi
     let o = UnlockOutlook(progress: listeningBehind(), rule: rule)
     #expect(abs(o.fraction - 2.0 / 3.0) < 0.001)     // seasoning 0.5, readiness 0.5, accuracy 1
     #expect(o.percent == 60)
+    #expect(UnlockOutlook.percent(of: 0.99) == 90)
     #expect(o.advice == .listenMore("M"))
     #expect(UnlockOutlook.suggestsSwitching(from: .keying, progress: listeningBehind(), rule: rule))
     #expect(!UnlockOutlook.suggestsSwitching(from: .listening, progress: listeningBehind(), rule: rule))

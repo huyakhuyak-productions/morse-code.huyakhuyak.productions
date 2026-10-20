@@ -17,6 +17,7 @@ struct HomeView: View {
     var body: some View {
         let progress = model.state.progress
         let summary = HomeSummary(progress: progress, rule: model.rule)
+        let outlook = model.outlook
         VStack(alignment: .leading, spacing: 20) {
             HStack {
                 HStack(spacing: 8) {
@@ -46,7 +47,7 @@ struct HomeView: View {
                 .fixedSize(horizontal: false, vertical: true)
             LazyVGrid(columns: columns, spacing: 6) {
                 ForEach(Morse.gridOrder, id: \.self) { character in
-                    let state = HomeCells.state(of: character, in: progress)
+                    let state = HomeCells.state(of: character, in: progress, nextFraction: outlook.fraction)
                     CellView(
                         character: character,
                         state: state,

@@ -33,6 +33,16 @@ final class HomeUITests: XCTestCase {
     }
 
     @MainActor
+    func testListeningBehindShowsDistance() {
+        launch(fixture: "listeningBehind")
+        XCTAssertTrue(app.staticTexts["2 of 36 unlocked, 0 mastered. Listen to M a few more times and R unlocks."].waitForExistence(timeout: 5))
+        let next = app.buttons["R, unlocks next, 60% there"]
+        XCTAssertTrue(next.exists)
+        next.tap()
+        XCTAssertTrue(app.staticTexts["Listen to M a few more times and R unlocks."].waitForExistence(timeout: 2))
+    }
+
+    @MainActor
     func testHomeHasNoNextCellWhenComplete() {
         launch(fixture: "complete")
         XCTAssertTrue(app.staticTexts["All 36 unlocked, 2 mastered."].waitForExistence(timeout: 5))

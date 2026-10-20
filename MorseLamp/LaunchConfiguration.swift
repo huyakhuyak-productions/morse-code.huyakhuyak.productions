@@ -47,6 +47,17 @@ nonisolated extension LaunchConfiguration {
             for _ in 0..<8 { state.progress.unlockNext() }
             return state
         },
+        "listeningBehind": {
+            var progress = LearnerProgress.initial
+            let rule = UnlockPace.standard.rule
+            for _ in 0..<18 {
+                progress.log("K", .keying, correct: true, rule: rule)
+                progress.log("M", .keying, correct: true, rule: rule)
+            }
+            var state = practised(progress)
+            state.hasListened = false
+            return state
+        },
         "complete": {
             var state = practised(solidKM(skippingLastMKeying: false))
             for _ in 0..<34 { state.progress.unlockNext() }

@@ -8,9 +8,9 @@ final class KeyingUITests: XCTestCase {
     }
 
     @MainActor
-    private func launch() {
+    private func launch(_ extra: [String] = [], fixture: String = "fresh") {
         app = XCUIApplication()
-        app.launchArguments = ["--fixture", "fresh", "--rng-seed", "1", "--silent-audio"]
+        app.launchArguments = ["--fixture", fixture, "--rng-seed", "1", "--silent-audio"] + extra
         app.launch()
     }
 
@@ -33,6 +33,7 @@ final class KeyingUITests: XCTestCase {
         app.buttons["Key"].tap()
         let targetText = app.staticTexts["target"]
         XCTAssertTrue(targetText.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["2 of 36 unlocked"].exists)   // nothing logged: no distance yet
         let target = targetText.label
         let display = Self.codes[target]!
         key(display)
@@ -46,6 +47,12 @@ final class KeyingUITests: XCTestCase {
         let second = targetText.label
         key("· · · · · ·")
         XCTAssertTrue(app.staticTexts["\(second) is \(Self.codes[second]!)"].waitForExistence(timeout: 3))
+    }
+
+    @MainActor
+    func testTickRowReadsTheDistance() {
+        launch(["--screen", "keying"], fixture: "listeningBehind")
+        XCTAssertTrue(app.staticTexts["2 of 36 unlocked, next 60% there"].waitForExistence(timeout: 5))
     }
 
     private static let codes: [String: String] = ["K": "— · —", "M": "— —"]

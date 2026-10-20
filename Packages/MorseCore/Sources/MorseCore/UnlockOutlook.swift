@@ -21,7 +21,10 @@ public struct UnlockOutlook: Sendable, Equatable {
     public let advice: Advice
 
     /// `fraction` floored to tens, so 0.99 reads 90 and only a held rule reads 100.
-    public var percent: Int { Int((fraction * 10).rounded(.down)) * 10 }
+    public var percent: Int { Self.percent(of: fraction) }
+
+    /// A fraction in 0...1 floored to tens of percent, for views that only hold the fraction.
+    public static func percent(of fraction: Double) -> Int { Int((fraction * 10).rounded(.down)) * 10 }
 
     public init(progress: LearnerProgress, rule: UnlockRule) {
         if progress.isComplete {

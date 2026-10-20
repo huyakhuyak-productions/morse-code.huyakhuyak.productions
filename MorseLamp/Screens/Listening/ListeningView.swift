@@ -47,7 +47,7 @@ struct ListeningView: View {
         let progress = app.state.progress
         let answered = model.phase == .right || isWrong(model.phase)
         return VStack(spacing: 0) {
-            DrillTopBar(unlocked: progress.unlockedCount, hasNext: progress.next != nil)
+            DrillTopBar(unlocked: progress.unlockedCount, hasNext: progress.next != nil, nextFraction: app.outlook.fraction)
             Spacer(minLength: 0)
             ZStack {
                 if answered {

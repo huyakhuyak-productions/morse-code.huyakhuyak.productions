@@ -19,6 +19,8 @@ struct RevealView: View {
             DrillTopBar(
                 unlocked: revealed ? model.unlockedCount : model.unlockedCount - 1,
                 hasNext: revealed ? model.unlockedCount < Morse.kochOrder.count : true,
+                // Before the reveal the arriving letter's tick is full; after it the new next one is empty.
+                nextFraction: revealed ? 0 : 1,
                 newestAccent: revealed
             )
             Spacer(minLength: 0)

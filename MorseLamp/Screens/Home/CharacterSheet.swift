@@ -14,7 +14,8 @@ struct CharacterSheet: View {
 
     var body: some View {
         LampSheet(isPresented: $isPresented, title: String(character), titleFont: LampFont.glyph(128), titleTracking: -0.05 * 128) {
-            let state = HomeCells.state(of: character, in: model.state.progress)
+            let outlook = model.outlook
+            let state = HomeCells.state(of: character, in: model.state.progress, nextFraction: outlook.fraction)
             let showsCode = HomeCells.showsCode(state, codesOnLocked: model.state.settings.codesOnLocked)
             if showsCode, let code = Morse.code(for: character) {
                 CodeView(code, scale: .hint, color: palette.fg)
@@ -38,9 +39,10 @@ struct CharacterSheet: View {
                     onPractice(character)
                 }
             } else {
-                CrossfadeText(nextLine)
+                CrossfadeText(nextLine(outlook))
                     .font(LampFont.body(15, relativeTo: .subheadline))
                     .foregroundStyle(palette.fgDim)
+                distanceBar(outlook.fraction)
             }
         }
         // The sheet slides out after the practice drill has already started the shared engine, so
@@ -50,13 +52,31 @@ struct CharacterSheet: View {
 
     /// "Key and listen to K and M until they stick, and R unlocks." before anything is logged,
     /// then the home sentence's advice: "Listen to M a few more times and R unlocks."
-    private var nextLine: String {
+    private func nextLine(_ outlook: UnlockOutlook) -> String {
         let progress = model.state.progress
         guard progress.hasLoggedAttempts else {
             let unlocked = progress.unlocked
             return "Key and listen to \(unlocked[0]) and \(unlocked[1]) until they stick, and \(character) unlocks."
         }
-        return HomeSummary.tail(UnlockOutlook(progress: progress, rule: model.rule).advice, next: character)
+        return HomeSummary.tail(outlook.advice, next: character)
+    }
+
+    /// The unlock distance as a 4 pt bar across the sheet body. Decorative: the cell's label
+    /// already reads the percent.
+    private func distanceBar(_ fraction: Double) -> some View {
+        Capsule()
+            .fill(palette.muted2)
+            .frame(height: 4)
+            .overlay(alignment: .leading) {
+                GeometryReader { geometry in
+                    Capsule()
+                        .fill(palette.accent)
+                        .frame(width: geometry.size.width * fraction)
+                        .distanceAnimation(fraction)
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityHidden(true)
     }
 
     private func play(_ code: Code) {
