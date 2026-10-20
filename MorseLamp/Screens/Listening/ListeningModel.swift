@@ -51,6 +51,8 @@ final class ListeningModel {
     @ObservationIgnored private var isFirstPlay = true
     /// The nudge is handing over to the keying drill, which keeps the shared engine running.
     @ObservationIgnored private var isHandingOver = false
+    /// The pending nudge has been stored as shown; it is stored once, when it becomes ready.
+    @ObservationIgnored private var nudgeRecorded = false
 
     init(app: AppModel, tone: any Tone, haptics: Haptics) {
         self.app = app
@@ -89,7 +91,7 @@ final class ListeningModel {
         await tone.start()
         tone.setPitch(app.state.settings.pitchHz)
         if revealPending != nil || nudgePending {
-            phase = .hold
+            parkInHold()
             return
         }
         switch phase {
@@ -122,6 +124,7 @@ final class ListeningModel {
     /// Clears the nudge without starting a round; used when the drill is leaving.
     func dismissNudge() {
         nudgePending = false
+        nudgeRecorded = false
     }
 
     // MARK: Rounds
@@ -175,7 +178,7 @@ final class ListeningModel {
             announce(status)
         }
         if shouldLog, mode == .normal, revealPending == nil {
-            nudgePending = app.recordNudgeIfDue(in: .listening)
+            nudgePending = app.isNudgeDue(in: .listening)
         }
         advanceMode()
         app.save()
@@ -193,7 +196,7 @@ final class ListeningModel {
             guard !Task.isCancelled else { return }
             if self.revealPending != nil || self.nudgePending {
                 // The hold is over; the view hands over to the reveal or the nudge.
-                self.phase = .hold
+                self.parkInHold()
                 return
             }
             self.nextRound()
@@ -215,9 +218,19 @@ final class ListeningModel {
         await playRound()
     }
 
+    /// Parks the drill for the view to present the reveal or the nudge. A nudge counts as shown
+    /// from here, never earlier, so leaving during the hold keeps it for the next visit.
+    private func parkInHold() {
+        phase = .hold
+        if nudgePending, revealPending == nil, !nudgeRecorded {
+            app.recordNudge(in: .listening)
+            nudgeRecorded = true
+        }
+    }
+
     /// "Keep listening": the nudge closed, the next round plays.
     func resumeAfterNudge() async {
-        nudgePending = false
+        dismissNudge()
         roundTask?.cancel()
         roundTask = nil
         nextRound()

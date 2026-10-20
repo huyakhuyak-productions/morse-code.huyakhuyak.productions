@@ -173,6 +173,7 @@ struct ListeningModelTests {
         await m.appear()
         await m.pick("M")
         #expect(m.nudgePending); #expect(!m.nudgeReady)
+        #expect(app.state.nudges.isEmpty)  // not shown yet
         try? await Task.sleep(for: .milliseconds(1_300))
         #expect(m.phase == .hold)
         #expect(m.nudgeReady)
@@ -188,5 +189,8 @@ struct ListeningModelTests {
         let (m, _) = makeListening(fixture: "fresh", tone: tone)
         m.handOver(); m.disappear()
         #expect(tone.stops == 0)
+        let (plain, _) = makeListening(fixture: "fresh", tone: tone)
+        plain.disappear()
+        #expect(tone.stops == 1)
     }
 }

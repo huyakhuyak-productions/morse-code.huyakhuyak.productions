@@ -198,13 +198,27 @@ struct KeyingModelTests {
         let (m, app) = makeKeying(fixture: "listeningBehind")
         m.setTarget("M"); key(m, code: Morse.code(for: "M")!, dit: 0.1)
         #expect(m.nudgePending); #expect(!m.nudgeReady)          // matched, still in the hold
+        #expect(app.state.nudges.isEmpty)                         // not shown yet
         try? await Task.sleep(for: .milliseconds(900))
         #expect(m.nudgeReady)
+        #expect(app.state.nudges.count == 1)
         m.dismissNudge()
         #expect(!m.nudgeReady)
         #expect(app.state.nudges.count == 1)
         m.setTarget("K"); key(m, code: Morse.code(for: "K")!, dit: 0.1)
         #expect(!m.nudgePending)
+    }
+
+    /// Leaving during the hold, before the sheet shows, keeps the nudge for the next visit.
+    @Test func nudgeLeftDuringTheHoldIsNotSpent() {
+        let (m, app) = makeKeying(fixture: "listeningBehind")
+        m.setTarget("M"); key(m, code: Morse.code(for: "M")!, dit: 0.1)
+        #expect(m.nudgePending)
+        m.disappear()
+        #expect(app.state.nudges.isEmpty)
+        let again = KeyingModel(app: app, tone: app.tone, haptics: app.haptics, now: { 0 })
+        again.setTarget("M"); key(again, code: Morse.code(for: "M")!, dit: 0.1)
+        #expect(again.nudgePending)
     }
 
     @Test func nudgeNeverFiresInPractice() {

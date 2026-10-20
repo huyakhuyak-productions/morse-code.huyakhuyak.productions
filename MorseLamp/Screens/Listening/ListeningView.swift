@@ -40,10 +40,10 @@ struct ListeningView: View {
         }) {
             if let next = app.state.progress.next {
                 NudgeSheet(isPresented: $showingNudge, from: .listening, next: next, character: app.nudgeCharacter) {
+                    guard !path.isEmpty else { return }
                     tookNudge = true
                     model?.handOver()
                     model?.dismissNudge()
-                    guard !path.isEmpty else { return }
                     path[path.count - 1] = .keying(practice: nil)
                 }
             }

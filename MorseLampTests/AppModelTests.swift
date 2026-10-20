@@ -45,10 +45,12 @@ struct AppModelTests {
 
     @Test func nudgeIsRecordedOncePerDrillAndLetter() {
         let m = AppModel(store: MemoryStateStore(), launch: .init(arguments: ["MorseLamp", "--fixture", "listeningBehind"]))
-        #expect(m.recordNudgeIfDue(in: .keying))
+        #expect(m.isNudgeDue(in: .keying))
+        #expect(m.state.nudges.isEmpty)  // checking has no side effects
+        m.recordNudge(in: .keying)
         #expect(m.state.nudges == [Nudge(drill: .keying, character: "M")])
-        #expect(!m.recordNudgeIfDue(in: .keying))
-        #expect(!m.recordNudgeIfDue(in: .listening))
+        #expect(!m.isNudgeDue(in: .keying))
+        #expect(!m.isNudgeDue(in: .listening))
         m.resetProgress()
         #expect(m.state.nudges.isEmpty)
     }

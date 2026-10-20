@@ -56,6 +56,8 @@ final class KeyingModel {
     @ObservationIgnored private var hasPressedThisVisit = false
     /// The nudge is handing over to the listening drill, which keeps the shared engine running.
     @ObservationIgnored private var isHandingOver = false
+    /// The pending nudge has been stored as shown; it is stored once, when it becomes ready.
+    @ObservationIgnored private var nudgeRecorded = false
     @ObservationIgnored private var holdTask: Task<Void, Never>?
     @ObservationIgnored private var tickTask: Task<Void, Never>?
 
@@ -125,6 +127,7 @@ final class KeyingModel {
     /// The nudge sheet closed; the prompt behind it is already on screen.
     func dismissNudge() {
         nudgePending = false
+        nudgeRecorded = false
     }
 
     // MARK: Paddle
@@ -215,7 +218,7 @@ final class KeyingModel {
             announce("Missed. \(status)")
         }
         if shouldLog, mode == .normal, revealPending == nil {
-            nudgePending = app.recordNudgeIfDue(in: .keying)
+            nudgePending = app.isNudgeDue(in: .keying)
         }
         advanceMode()
         app.save()
@@ -261,6 +264,11 @@ final class KeyingModel {
         keyed = []
         presses = []
         phase = .keying
+        // The hold is over and the nudge is about to show: only now does it count as shown.
+        if nudgePending, !nudgeRecorded {
+            app.recordNudge(in: .keying)
+            nudgeRecorded = true
+        }
         switch mode {
         case .practice(let character, let remaining):
             if remaining <= 0 {

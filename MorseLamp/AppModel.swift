@@ -74,19 +74,21 @@ final class AppModel {
         }
     }
 
-    /// True once per (drill, newest letter) when more of this drill will not unlock the next
-    /// letter and the other drill would; records the nudge and saves so it never shows again.
-    func recordNudgeIfDue(in drill: Drill) -> Bool {
+    /// True when more of this drill will not unlock the next letter, the other drill would, and
+    /// no nudge has been shown yet in this drill for the newest letter. No side effects.
+    func isNudgeDue(in drill: Drill) -> Bool {
         let skill: Skill = switch drill {
         case .keying: .keying
         case .listening: .listening
         }
-        let nudge = Nudge(drill: drill, character: state.progress.newest)
-        guard UnlockOutlook.suggestsSwitching(from: skill, progress: state.progress, rule: rule),
-              !state.nudges.contains(nudge) else { return false }
-        state.nudges.append(nudge)
+        return UnlockOutlook.suggestsSwitching(from: skill, progress: state.progress, rule: rule)
+            && !state.nudges.contains(Nudge(drill: drill, character: state.progress.newest))
+    }
+
+    /// The nudge is on screen: it never shows again in this drill for the newest letter.
+    func recordNudge(in drill: Drill) {
+        state.nudges.append(Nudge(drill: drill, character: state.progress.newest))
         save()
-        return true
     }
 
     /// Back to K and M, with the rhythm forgotten, no guided rounds or nudges pending and the first-run hints back.
