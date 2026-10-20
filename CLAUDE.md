@@ -49,7 +49,9 @@ system threads (audio render block, haptic engine handlers) must be `@Sendable`.
 One `ToneEngine` is shared by the home sheet, both drills and Settings. Drills start it on
 appear and stop it on disappear; the app stops it on background and the shared
 `onBackgroundReturn` modifier restarts it. The letter sheet must not stop it when it hands
-over to the practice drill (the sheet's disappearance fires after the drill has started).
+over to the practice drill (the sheet's disappearance fires after the drill has started). The drill that leaves through the
+nudge's "Listen now" / "Key now" calls `handOver()` first, so its `disappear()` leaves the shared
+engine running for the arriving drill.
 
 ## Release assets
 

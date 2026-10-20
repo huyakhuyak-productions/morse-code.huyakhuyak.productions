@@ -169,6 +169,10 @@ final class ListeningModel {
                 if app.state.progress.pendingUnlock, mode == .normal {
                     revealPending = app.state.progress.next
                 }
+                // Only a correct answer arms the nudge: a miss never ends on a sheet.
+                if mode == .normal, revealPending == nil {
+                    nudgePending = app.isNudgeDue(in: .listening)
+                }
             }
             announce("\(answer), right")
         } else {
@@ -176,9 +180,6 @@ final class ListeningModel {
             status = "It was \(answer), not \(picked)."
             if shouldLog { app.state.progress.log(answer, .listening, correct: false, rule: app.rule) }
             announce(status)
-        }
-        if shouldLog, mode == .normal, revealPending == nil {
-            nudgePending = app.isNudgeDue(in: .listening)
         }
         advanceMode()
         app.save()

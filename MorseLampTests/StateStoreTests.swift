@@ -14,6 +14,16 @@ struct StateStoreTests {
         #expect(try JSONDecoder().decode(AppState.self, from: strict).settings.pace == .strict)
     }
 
+    /// Unreadable nudges or guided rounds are dropped without failing the rest of the file.
+    @Test func unreadableNudgesAndGuidedRoundsAreDropped() throws {
+        let nudges = Data(#"{"nudges":[{"drill":"humming","character":"M"}],"settings":{"wpm":22}}"#.utf8)
+        let state = try JSONDecoder().decode(AppState.self, from: nudges)
+        #expect(state.nudges.isEmpty)
+        #expect(state.settings.wpm == 22)
+        let guided = Data(#"{"guided":{"drill":"keying","character":"MM","remaining":3}}"#.utf8)
+        #expect(try JSONDecoder().decode(AppState.self, from: guided).guided == nil)
+    }
+
     @Test func fileStoreRoundTrips() throws {
         let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID()).json")
         let store = FileStateStore(url: url)

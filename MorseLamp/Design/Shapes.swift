@@ -139,7 +139,7 @@ struct TickRow: View {
     /// "7 of 36 unlocked", then ", next 60% there" once the distance reads above 0 %.
     private var label: String {
         let count = "\(unlocked) of \(Morse.kochOrder.count) unlocked"
-        guard hasNext, let distance = HomeCells.percentLabel(nextFraction) else { return count }
+        guard hasNext, let distance = UnlockOutlook.percentLabel(of: nextFraction) else { return count }
         return "\(count), next \(distance)"
     }
 }

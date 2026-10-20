@@ -24,12 +24,26 @@ public struct UnlockOutlook: Sendable, Equatable {
     public var percent: Int { Self.percent(of: fraction) }
 
     /// A fraction in 0...1 floored to tens of percent, for views that only hold the fraction.
-    public static func percent(of fraction: Double) -> Int { Int((fraction * 10).rounded(.down)) * 10 }
+    /// The epsilon keeps a mean that lands on a tenth in exact arithmetic (0.8 as 0.7999…) on it.
+    public static func percent(of fraction: Double) -> Int { Int((fraction * 10 + 1e-9).rounded(.down)) * 10 }
+
+    /// "60% there", floored to tens; nil while the distance still reads 0 %.
+    public static func percentLabel(of fraction: Double) -> String? {
+        let percent = percent(of: fraction)
+        return percent > 0 ? "\(percent)% there" : nil
+    }
 
     public init(progress: LearnerProgress, rule: UnlockRule) {
         if progress.isComplete {
             fraction = 1
             advice = .complete
+            return
+        }
+        // The rule held and the reveal has not run: the next character is earned, whatever the
+        // current pace's rule says about the set now.
+        if progress.pendingUnlock {
+            fraction = 1
+            advice = .almost
             return
         }
         let mean = (Self.seasoning(progress, rule) + Self.readiness(progress) + Self.accuracyVolume(progress, rule)) / 3

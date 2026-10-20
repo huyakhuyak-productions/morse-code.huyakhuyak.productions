@@ -221,6 +221,22 @@ struct KeyingModelTests {
         #expect(again.nudgePending)
     }
 
+    /// Only a correct answer arms the nudge: a logged miss on the nudge-due progress does not.
+    @Test func nudgeIsNotArmedByAMiss() {
+        let (m, app) = makeKeying(fixture: "listeningBehind")
+        m.setTarget("M"); key(m, code: Morse.code(for: "K")!, dit: 0.1)
+        #expect(app.state.progress.record("M", .keying).recent.last == false)
+        #expect(!m.nudgePending)
+    }
+
+    /// Guided rounds after a reveal are never interrupted by the nudge.
+    @Test func nudgeNeverFiresInGuidedRounds() {
+        let (m, _) = makeKeying(fixture: "listeningBehind", guided: GuidedRounds(drill: .keying, character: "M", remaining: 3))
+        #expect(m.mode == .guided("M", remaining: 3))
+        key(m, code: Morse.code(for: "M")!, dit: 0.1)
+        #expect(!m.nudgePending)
+    }
+
     @Test func nudgeNeverFiresInPractice() {
         let (m, _) = makeKeying(fixture: "listeningBehind", practice: "M")
         key(m, code: Morse.code(for: "M")!, dit: 0.1)

@@ -184,6 +184,53 @@ struct ListeningModelTests {
         m.disappear()
     }
 
+    /// A listening model over the keyingBehind shape (K and M seasoned in listening only), answer M.
+    private func keyingBehind(guided: GuidedRounds? = nil) -> (ListeningModel, AppModel) {
+        let (_, app) = makeListening(fixture: "fresh")
+        let rule = UnlockPace.standard.rule
+        var progress = LearnerProgress.initial
+        for _ in 0..<18 {
+            progress.log("K", .listening, correct: true, rule: rule)
+            progress.log("M", .listening, correct: true, rule: rule)
+        }
+        app.state.progress = progress
+        app.state.hasListened = true
+        app.state.guided = guided
+        let m = ListeningModel(app: app, tone: app.tone, haptics: app.haptics)
+        m.setAnswer("M")
+        return (m, app)
+    }
+
+    /// Only a correct answer arms the nudge: a logged miss on the nudge-due progress does not.
+    @Test func nudgeIsNotArmedByAMiss() async {
+        let (m, app) = keyingBehind()
+        await m.appear()
+        await m.pick("K")
+        #expect(app.state.progress.record("M", .listening).recent.last == false)
+        #expect(!m.nudgePending)
+        m.disappear()
+    }
+
+    /// Guided rounds after a reveal are never interrupted by the nudge.
+    @Test func nudgeNeverFiresInGuidedRounds() async {
+        let (m, _) = keyingBehind(guided: GuidedRounds(drill: .listening, character: "M", remaining: 3))
+        #expect(m.mode == .guided("M", remaining: 3))
+        await m.appear()
+        await m.pick("M")
+        #expect(!m.nudgePending)
+        m.disappear()
+    }
+
+    /// Leaving during the hold, before the sheet shows, keeps the nudge for the next visit.
+    @Test func nudgeLeftDuringTheHoldIsNotSpent() async {
+        let (m, app) = keyingBehind()
+        await m.appear()
+        await m.pick("M")
+        #expect(m.nudgePending)
+        m.disappear()
+        #expect(app.state.nudges.isEmpty)
+    }
+
     @Test func handOverKeepsToneRunning() {
         let tone = StopCountingTone()
         let (m, _) = makeListening(fixture: "fresh", tone: tone)

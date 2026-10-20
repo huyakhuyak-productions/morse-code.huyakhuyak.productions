@@ -48,7 +48,10 @@ final class NudgeUITests: XCTestCase {
         XCTAssertEqual(target.label, "M")
         paddle.press(forDuration: 0.4)
         paddle.press(forDuration: 0.4)
-        sleep(2)
+        // The hold is over once the next prompt replaces M; that is where the sheet would show.
+        let nextPrompt = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label != 'M'"), object: target)
+        XCTAssertEqual(XCTWaiter().wait(for: [nextPrompt], timeout: 3), .completed)
         XCTAssertFalse(app.staticTexts["Try listening?"].exists)
+        XCTAssertFalse(app.buttons["Keep keying"].exists)
     }
 }

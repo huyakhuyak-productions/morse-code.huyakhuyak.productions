@@ -22,7 +22,7 @@ nonisolated enum HomeCells {
         switch state {
         case .locked: "\(character), locked"
         case .next(let fraction):
-            if let distance = percentLabel(fraction) { "\(character), unlocks next, \(distance)" } else { "\(character), unlocks next" }
+            if let distance = UnlockOutlook.percentLabel(of: fraction) { "\(character), unlocks next, \(distance)" } else { "\(character), unlocks next" }
         case .unlocked(let level): "\(character), \(name(of: level))"
         }
     }
@@ -39,12 +39,6 @@ nonisolated enum HomeCells {
         case .keyMore(let c): Caption(skill: .keying, text: "\(c) needs your hand")
         case .complete, .steady, .almost: nil
         }
-    }
-
-    /// "60% there", floored to tens; nil while the distance still reads 0 %.
-    static func percentLabel(_ fraction: Double) -> String? {
-        let percent = UnlockOutlook.percent(of: fraction)
-        return percent > 0 ? "\(percent)% there" : nil
     }
 
     /// Unlocked cells always show their code; locked and next cells only when the setting says so.

@@ -87,8 +87,10 @@ nonisolated struct AppState: Codable, Equatable, Sendable {
         progress = try c.decodeIfPresent(LearnerProgress.self, forKey: .progress) ?? progress
         settings = try c.decodeIfPresent(Settings.self, forKey: .settings) ?? settings
         estimator = try c.decodeIfPresent(DitEstimator.self, forKey: .estimator) ?? estimator
-        guided = try c.decodeIfPresent(GuidedRounds.self, forKey: .guided)
-        nudges = try c.decodeIfPresent([Nudge].self, forKey: .nudges) ?? nudges
+        // Guided rounds and nudges are disposable: a value this build cannot read is dropped,
+        // never allowed to fail the whole file.
+        guided = try? c.decodeIfPresent(GuidedRounds.self, forKey: .guided)
+        nudges = (try? c.decodeIfPresent([Nudge].self, forKey: .nudges)) ?? []
         hasKeyed = try c.decodeIfPresent(Bool.self, forKey: .hasKeyed) ?? hasKeyed
         hasListened = try c.decodeIfPresent(Bool.self, forKey: .hasListened) ?? hasListened
         bluetoothNoticeShown = try c.decodeIfPresent(Bool.self, forKey: .bluetoothNoticeShown) ?? bluetoothNoticeShown

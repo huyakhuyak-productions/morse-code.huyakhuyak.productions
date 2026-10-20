@@ -62,3 +62,8 @@ import Testing
     #expect(HomeSummary.tail(.steady([]), next: "R") == "A few more clean answers and R unlocks.")
     #expect(HomeSummary.tail(.almost, next: "R") == "R is almost here.")
 }
+
+@Test func pendingUnlockSentenceSaysAlmostUnderAStricterPace() {
+    let s = HomeSummary(progress: pendingUnderRelaxed(), rule: UnlockPace.strict.rule)
+    #expect(s.plainText.hasSuffix("R is almost here."))
+}

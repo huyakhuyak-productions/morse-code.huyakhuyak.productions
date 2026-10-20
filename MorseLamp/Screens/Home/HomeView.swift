@@ -90,13 +90,18 @@ extension HomeView {
     /// One line under a button. Empty when the other drill is the suggested one; the row keeps its height.
     private func captionView(_ skill: Skill, caption: HomeCells.Caption?, identifier: String) -> some View {
         let text = caption?.skill == skill ? caption?.text ?? "" : ""
-        return CrossfadeText(text)
-            .font(LampFont.body(13, relativeTo: .footnote))
-            .foregroundStyle(palette.fgDim)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity, minHeight: 18)
-            .accessibilityIdentifier(identifier)
-            .accessibilityHidden(text.isEmpty)
+        let font = LampFont.body(13, relativeTo: .footnote)
+        return ZStack {
+            // Reserves one line at the current Dynamic Type size, so a caption never moves the buttons.
+            Text(" ").font(font).hidden().accessibilityHidden(true)
+            CrossfadeText(text)
+                .font(font)
+                .foregroundStyle(palette.fgDim)
+                .multilineTextAlignment(.center)
+                .accessibilityIdentifier(identifier)
+                .accessibilityHidden(text.isEmpty)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

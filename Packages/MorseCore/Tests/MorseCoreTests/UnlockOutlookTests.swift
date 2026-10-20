@@ -51,17 +51,17 @@ private func listeningBehind() -> LearnerProgress {   // 18 correct K and M keyi
 }
 
 @Test func lettersWeakInBothSkillsAreSteady() {
-    var p = solidKM()
+    var p = unflaggedSolidKM()
     for _ in 0..<10 { for s in Skill.allCases { p.log("K", s, correct: false, rule: rule) } }
     #expect(UnlockOutlook(progress: p, rule: rule).advice == .steady(["K"]))
 }
 
 @Test func accuracyAloneIsSteadyEmptyUntilAlmost() {
-    var p = solidKM()
+    var p = unflaggedSolidKM()
     for c: Character in ["K", "M"] { for s in Skill.allCases { for _ in 0..<3 { p.log(c, s, correct: false, rule: rule) } } }
     let o = UnlockOutlook(progress: p, rule: rule)       // every pair 17/20 nearly; window 18/27
     #expect(o.advice == .steady([])); #expect(o.fraction < 0.9)
-    var q = solidKM()
+    var q = unflaggedSolidKM()
     for _ in 0..<4 { q.log("M", .keying, correct: false, rule: rule) }   // window 26/27 → 0.988
     #expect(UnlockOutlook(progress: q, rule: rule).advice == .almost)
     #expect(UnlockOutlook(progress: q, rule: rule).fraction <= 0.99)
@@ -72,4 +72,34 @@ private func listeningBehind() -> LearnerProgress {   // 18 correct K and M keyi
     let o = UnlockOutlook(progress: p, rule: rule)
     #expect(o.advice == .complete); #expect(o.fraction == 1)
     #expect(!UnlockOutlook.suggestsSwitching(from: .keying, progress: p, rule: rule))
+}
+
+/// Five correct K and M in both skills under the relaxed pace: the rule held, the reveal has not run.
+func pendingUnderRelaxed() -> LearnerProgress {
+    var p = LearnerProgress.initial
+    let relaxed = UnlockPace.relaxed.rule
+    for _ in 0..<5 { for c: Character in ["K", "M"] { for s in Skill.allCases { p.log(c, s, correct: true, rule: relaxed) } } }
+    return p
+}
+
+@Test func pendingUnlockIsFullAndAlmostUnderAStricterPace() {
+    let p = pendingUnderRelaxed()
+    #expect(p.pendingUnlock)
+    let strict = UnlockPace.strict.rule
+    let o = UnlockOutlook(progress: p, rule: strict)
+    #expect(o.fraction == 1); #expect(o.advice == .almost); #expect(o.percent == 100)
+    #expect(!UnlockOutlook.suggestsSwitching(from: .keying, progress: p, rule: strict))
+}
+
+@Test func percentFloorsToTensWithoutLosingAnExactTenth() {
+    #expect(UnlockOutlook.percent(of: (0.4 + 1.0 + 1.0) / 3) == 80)
+    #expect(UnlockOutlook.percent(of: 0.99) == 90)
+    #expect(UnlockOutlook.percent(of: 1) == 100)
+    #expect(UnlockOutlook.percent(of: 0) == 0)
+}
+
+@Test func percentLabelReadsTensAndHidesZero() {
+    #expect(UnlockOutlook.percentLabel(of: 0) == nil)
+    #expect(UnlockOutlook.percentLabel(of: 0.99) == "90% there")
+    #expect(UnlockOutlook.percentLabel(of: 1) == "100% there")
 }

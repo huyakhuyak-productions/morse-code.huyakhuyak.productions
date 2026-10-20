@@ -197,6 +197,10 @@ final class KeyingModel {
                 if app.state.progress.pendingUnlock, mode == .normal {
                     revealPending = app.state.progress.next
                 }
+                // Only a correct answer arms the nudge: a miss never ends on a sheet.
+                if mode == .normal, revealPending == nil {
+                    nudgePending = app.isNudgeDue(in: .keying)
+                }
             }
             hintedRetry = false
             announce("\(target), matched")
@@ -216,9 +220,6 @@ final class KeyingModel {
             if shouldLog { app.state.progress.log(target, .keying, correct: false, rule: app.rule) }
             hintedRetry = true
             announce("Missed. \(status)")
-        }
-        if shouldLog, mode == .normal, revealPending == nil {
-            nudgePending = app.isNudgeDue(in: .keying)
         }
         advanceMode()
         app.save()
@@ -290,7 +291,8 @@ final class KeyingModel {
         }
         // After a miss the status, like the hint, stays until the next press.
         if !hintedRetry { refreshStatus() }
-        announce(String(target))
+        // The nudge sheet takes focus; it returns to the prompt when the sheet closes.
+        if !nudgePending { announce(String(target)) }
     }
 
     /// After the reveal: the guided rounds "Keep going" scheduled, or the normal rotation if none.

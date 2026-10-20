@@ -14,9 +14,6 @@ struct HomeModelTests {
         #expect(HomeCells.showsCode(.unlocked(.new), codesOnLocked: false))
         #expect(HomeCells.accessibilityLabel("R", .next(fraction: 0)) == "R, unlocks next")
         #expect(HomeCells.accessibilityLabel("R", .next(fraction: 0.666)) == "R, unlocks next, 60% there")
-        #expect(HomeCells.percentLabel(0) == nil)
-        #expect(HomeCells.percentLabel(0.99) == "90% there")
-        #expect(HomeCells.percentLabel(1) == "100% there")
         #expect(HomeCells.accessibilityLabel("K", .unlocked(.nearly)) == "K, nearly there")
         #expect(HomeCells.accessibilityLabel("Q", .locked) == "Q, locked")
         for _ in 0..<34 { _ = p.unlockNext() }
