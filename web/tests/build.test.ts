@@ -34,6 +34,13 @@ describe("built site", () => {
     expect(html("index.html")).toContain(GET_APP.label);
   });
 
+  test("landing button joins the TestFlight beta", () => {
+    expect(GET_APP).toEqual({
+      label: "Join the TestFlight",
+      href: "https://testflight.apple.com/join/w4vFmtRW",
+    });
+  });
+
   test("every page carries the Smart App Banner for the App Store record", () => {
     expect(APP_STORE_ID).toMatch(/^\d+$/);
     for (const page of pages) {

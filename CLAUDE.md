@@ -79,14 +79,15 @@ the owner raises it by hand. The App Store Connect record (id 6824568488) is nam
 CSS 4 (`@tailwindcss/vite`), `astro-og-canvas` for the og-image and `@astrojs/sitemap`. It wears
 the app's palette as `@theme` tokens in `web/src/styles/lamp.css`, with a `prefers-color-scheme`
 override for light. `web/src/lib/site.ts` holds the constants, including the landing button
-`GET_APP` (the GitHub source link until the TestFlight public link exists, then that link,
-then the App Store link; never an empty href). In `web/`:
+`GET_APP` (the TestFlight public link `TESTFLIGHT_URL` until release, then the App Store
+link; never an empty href). In `web/`:
 `bun run dev`, `bun run check`, `bun run test` (builds, then checks `dist/` for the og images,
 the button link and the contact address). The icon copies in `web/public` and `web/src/assets`
 come from `scripts/render-icon.sh`, the screenshots from `scripts/compose-screenshots.swift`;
 regenerate, do not edit. Deploys with `git push dokku main` to `dokku@oasis.wg`, app
 `morse-code-huyakhuyak-productions`, built from `web/` as the Docker context
-(`builder:set ... build-dir web`); the one-time dokku commands are in `web/README.md`.
+(`builder:set ... build-dir web`); the one-time dokku commands are in `web/README.md` and were
+run on 2026-10-20 (HTTPS via letsencrypt).
 
 ## Deploying to an iPhone
 

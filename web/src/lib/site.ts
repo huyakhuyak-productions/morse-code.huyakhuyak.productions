@@ -4,12 +4,14 @@ export const CONTACT = "mykola@socket.agency";
 /** App Store Connect record id; the Smart App Banner shows once the app is live. */
 export const APP_STORE_ID = "6824568488";
 export const SOURCE_URL = "https://github.com/huyakhuyak-productions/morse-code.huyakhuyak.productions";
+/** Public link of the TestFlight group "Friends"; anyone with it can join the beta. */
+export const TESTFLIGHT_URL = "https://testflight.apple.com/join/w4vFmtRW";
 
 /**
- * The landing page's one button. Point it at the TestFlight public link once the group exists,
- * and at the App Store page after release. It must always carry a real https URL.
+ * The landing page's one button. It carries the TestFlight public link until release, then the
+ * App Store page. It must always carry a real https URL.
  */
 export const GET_APP: { label: string; href: string } = {
-  label: "Source on GitHub",
-  href: SOURCE_URL,
+  label: "Join the TestFlight",
+  href: TESTFLIGHT_URL,
 };

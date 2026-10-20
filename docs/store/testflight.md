@@ -26,13 +26,16 @@
 
 ## First build only (owner)
 
-- [ ] TestFlight → Internal Testing: create a group, add yourself, pick the build.
+- [x] TestFlight → Internal Testing: group "Owner" (automatic distribution on), owner invited
+      2026-10-20, build 2 attached.
 - [ ] Install from the TestFlight app. Check the icon in default, dark, clear and tinted
       home-screen styles, the launch colour in light and dark, and that the tone plays with
       the silent switch on.
-- [ ] TestFlight → External Testing: create the group "Friends", add the build, turn on
-      Public Link, copy the link into `web/src/lib/site.ts` (`GET_APP`: label "Join the
-      TestFlight"), commit, `bun run test` in `web/`, then `git push dokku main` so the live page
-      shows the button before review.
-- [ ] Submit the group for Beta App Review only after the web page is live: the review asks
-      for the privacy policy URL, `https://morse-code.huyakhuyak.productions/privacy`.
+- [x] TestFlight → External Testing: group "Friends" with build 2 and the Public Link
+      `https://testflight.apple.com/join/w4vFmtRW` (open to anyone, no tester limit). The link is
+      `TESTFLIGHT_URL` in `web/src/lib/site.ts` and `GET_APP` points at it; the site went live on
+      dokku the same day.
+- [x] Build 2 submitted for Beta App Review on 2026-10-20 ("Waiting for Review"); the review
+      reads the privacy policy at `https://morse-code.huyakhuyak.productions/privacy`.
+- [ ] When the review passes, send friends the public link. Each later `scripts/release.sh`
+      upload reaches "Owner" automatically; add it to "Friends" by hand (Builds → +).

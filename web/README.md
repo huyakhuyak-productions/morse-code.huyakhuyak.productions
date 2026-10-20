@@ -17,7 +17,7 @@ them, do not edit. The landing button is the `GET_APP` constant in `src/lib/site
 ## Deployment
 
 Dokku builds this directory with the `Dockerfile` (bun build, then nginx). One-time setup on the
-server, run by the owner:
+server, run by the owner (done 2026-10-20):
 
 ```bash
 ssh dokku@oasis.wg apps:create morse-code-huyakhuyak-productions
