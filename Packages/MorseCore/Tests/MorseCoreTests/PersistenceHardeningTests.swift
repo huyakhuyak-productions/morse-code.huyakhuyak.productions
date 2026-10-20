@@ -13,7 +13,7 @@ private func decodeProgress(_ json: String) throws -> LearnerProgress {
     let low = try decodeProgress(#"{"version":1,"unlockedCount":0,"pendingUnlock":false,"records":{},"recentAcrossSet":[]}"#)
     #expect(low.unlockedCount == 2)
     #expect(low.newest == "M")
-    #expect(HomeSummary(progress: low).kind == .firstRun)
+    #expect(HomeSummary(progress: low, rule: UnlockPace.standard.rule).kind == .firstRun)
 }
 
 @Test func decodingToleratesMissingFields() throws {

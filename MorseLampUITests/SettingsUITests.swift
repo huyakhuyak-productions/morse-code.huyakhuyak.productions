@@ -55,7 +55,7 @@ final class SettingsUITests: XCTestCase {
         let back = app.buttons["back"]
         XCTAssertEqual(back.frame.size, CGSize(width: 44, height: 44))
         back.tap()
-        XCTAssertTrue(app.staticTexts["Start with K and M. Key them until they stick, and R unlocks."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Start with K and M. Key and listen to them until they stick, and R unlocks."].waitForExistence(timeout: 5))
 
         // Settings survive a relaunch from the saved file; progress stays reset.
         launch(["--silent-audio"])

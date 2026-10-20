@@ -12,7 +12,7 @@ import Testing
 @Test func completeSentenceWinsOverFirstRun() {
     var p = LearnerProgress.initial
     for _ in 0..<34 { _ = p.unlockNext() }    // everything unlocked, nothing logged
-    let s = HomeSummary(progress: p)
+    let s = HomeSummary(progress: p, rule: UnlockPace.standard.rule)
     #expect(s.kind == .complete)
     #expect(s.plainText == "All 36 unlocked, 0 mastered.")
 }

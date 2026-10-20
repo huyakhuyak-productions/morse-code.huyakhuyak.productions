@@ -17,7 +17,7 @@ final class HomeUITests: XCTestCase {
     @MainActor
     func testFreshHomeShowsFirstRunSentenceAndButtons() {
         launch(fixture: "fresh")
-        XCTAssertTrue(app.staticTexts["Start with K and M. Key them until they stick, and R unlocks."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Start with K and M. Key and listen to them until they stick, and R unlocks."].waitForExistence(timeout: 5))
         let listen = app.buttons["Listen"]
         let key = app.buttons["Key"]
         XCTAssertTrue(listen.exists)
@@ -29,7 +29,7 @@ final class HomeUITests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25)).tap()
         XCTAssertTrue(app.buttons["R, unlocks next"].waitForExistence(timeout: 2))
         app.buttons["R, unlocks next"].tap()
-        XCTAssertTrue(app.staticTexts["Unlocks when your set is solid"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Key and listen to K and M until they stick, and R unlocks."].waitForExistence(timeout: 2))
     }
 
     @MainActor

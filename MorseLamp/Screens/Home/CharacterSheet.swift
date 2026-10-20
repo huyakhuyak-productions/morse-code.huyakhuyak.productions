@@ -2,7 +2,7 @@ import MorseCore
 import SwiftUI
 
 /// The reference sheet for one cell: the glyph, its code, both skill lines, a play ring and Practice.
-/// For the next cell: the glyph and "Unlocks when your set is solid".
+/// For the next cell: the glyph and what to drill before it unlocks.
 struct CharacterSheet: View {
     @State private var startedPractice = false
     @Binding var isPresented: Bool
@@ -38,7 +38,7 @@ struct CharacterSheet: View {
                     onPractice(character)
                 }
             } else {
-                CrossfadeText("Unlocks when your set is solid")
+                CrossfadeText(nextLine)
                     .font(LampFont.body(15, relativeTo: .subheadline))
                     .foregroundStyle(palette.fgDim)
             }
@@ -46,6 +46,17 @@ struct CharacterSheet: View {
         // The sheet slides out after the practice drill has already started the shared engine, so
         // only a plain dismissal stops it; the drill owns it from here.
         .onDisappear { if !startedPractice { model.tone.stop() } }
+    }
+
+    /// "Key and listen to K and M until they stick, and R unlocks." before anything is logged,
+    /// then the home sentence's advice: "Listen to M a few more times and R unlocks."
+    private var nextLine: String {
+        let progress = model.state.progress
+        guard progress.hasLoggedAttempts else {
+            let unlocked = progress.unlocked
+            return "Key and listen to \(unlocked[0]) and \(unlocked[1]) until they stick, and \(character) unlocks."
+        }
+        return HomeSummary.tail(UnlockOutlook(progress: progress, rule: model.rule).advice, next: character)
     }
 
     private func play(_ code: Code) {

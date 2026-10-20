@@ -16,7 +16,7 @@ struct HomeView: View {
 
     var body: some View {
         let progress = model.state.progress
-        let summary = HomeSummary(progress: progress)
+        let summary = HomeSummary(progress: progress, rule: model.rule)
         VStack(alignment: .leading, spacing: 20) {
             HStack {
                 HStack(spacing: 8) {
