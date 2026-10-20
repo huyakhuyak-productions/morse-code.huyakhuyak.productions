@@ -33,4 +33,12 @@ struct HomeModelTests {
         #expect(HomeCells.skillLine(.listening, record: p.record("M", .listening)) == "Listening: 20 of the last 20. Mastered.")
         #expect(HomeCells.skillLine(.listening, record: p.record("K", .listening)) == "Listening: 0 of 0 so far. New.")
     }
+
+    @Test func captions() {
+        #expect(HomeCells.caption(for: .listenMore("M")) == .init(skill: .listening, text: "M needs your ear"))
+        #expect(HomeCells.caption(for: .keyMore("M")) == .init(skill: .keying, text: "M needs your hand"))
+        #expect(HomeCells.caption(for: .steady(["K"])) == nil)
+        #expect(HomeCells.caption(for: .almost) == nil)
+        #expect(HomeCells.caption(for: .complete) == nil)
+    }
 }

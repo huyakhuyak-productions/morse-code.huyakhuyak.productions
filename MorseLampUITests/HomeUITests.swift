@@ -23,6 +23,7 @@ final class HomeUITests: XCTestCase {
         XCTAssertTrue(listen.exists)
         XCTAssertTrue(key.exists)
         XCTAssertLessThan(listen.frame.midX, key.frame.midX)
+        XCTAssertFalse(app.staticTexts["M needs your ear"].exists)
         XCTAssertFalse(app.buttons["Q, locked"].isEnabled)
         app.buttons["K, new"].tap()
         XCTAssertTrue(app.buttons["Practice K"].waitForExistence(timeout: 2))
@@ -36,6 +37,9 @@ final class HomeUITests: XCTestCase {
     func testListeningBehindShowsDistance() {
         launch(fixture: "listeningBehind")
         XCTAssertTrue(app.staticTexts["2 of 36 unlocked, 0 mastered. Listen to M a few more times and R unlocks."].waitForExistence(timeout: 5))
+        let caption = app.staticTexts["M needs your ear"]
+        XCTAssertTrue(caption.exists)
+        XCTAssertLessThan(caption.frame.midX, app.buttons["Key"].frame.midX)
         let next = app.buttons["R, unlocks next, 60% there"]
         XCTAssertTrue(next.exists)
         next.tap()

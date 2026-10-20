@@ -18,6 +18,9 @@ struct HomeView: View {
         let progress = model.state.progress
         let summary = HomeSummary(progress: progress, rule: model.rule)
         let outlook = model.outlook
+        // Silent on the first run and while letters are slipping: the sentence already says what to do.
+        let caption: HomeCells.Caption? = progress.hasLoggedAttempts && summary.kind != .slipping
+            ? HomeCells.caption(for: outlook.advice) : nil
         VStack(alignment: .leading, spacing: 20) {
             HStack {
                 HStack(spacing: 8) {
@@ -60,9 +63,15 @@ struct HomeView: View {
                 }
             }
             Spacer(minLength: 0)
-            HStack(spacing: 12) {
-                PrimaryButton("Listen") { path.append(.listening) }
-                PrimaryButton("Key") { path.append(.keying(practice: nil)) }
+            HStack(alignment: .top, spacing: 12) {
+                VStack(spacing: 6) {
+                    PrimaryButton("Listen") { path.append(.listening) }
+                    captionView(.listening, caption: caption, identifier: "caption-listening")
+                }
+                VStack(spacing: 6) {
+                    PrimaryButton("Key") { path.append(.keying(practice: nil)) }
+                    captionView(.keying, caption: caption, identifier: "caption-keying")
+                }
             }
         }
         .padding(.horizontal, 16)
@@ -74,6 +83,20 @@ struct HomeView: View {
         }) { character in
             path.append(.keying(practice: character))
         })
+    }
+}
+
+extension HomeView {
+    /// One line under a button. Empty when the other drill is the suggested one; the row keeps its height.
+    private func captionView(_ skill: Skill, caption: HomeCells.Caption?, identifier: String) -> some View {
+        let text = caption?.skill == skill ? caption?.text ?? "" : ""
+        return CrossfadeText(text)
+            .font(LampFont.body(13, relativeTo: .footnote))
+            .foregroundStyle(palette.fgDim)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, minHeight: 18)
+            .accessibilityIdentifier(identifier)
+            .accessibilityHidden(text.isEmpty)
     }
 }
 

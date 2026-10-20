@@ -27,6 +27,20 @@ nonisolated enum HomeCells {
         }
     }
 
+    /// What sits under a home button: the drill the next unlock is waiting on.
+    nonisolated struct Caption: Equatable {
+        let skill: Skill
+        let text: String
+    }
+
+    static func caption(for advice: UnlockOutlook.Advice) -> Caption? {
+        switch advice {
+        case .listenMore(let c): Caption(skill: .listening, text: "\(c) needs your ear")
+        case .keyMore(let c): Caption(skill: .keying, text: "\(c) needs your hand")
+        case .complete, .steady, .almost: nil
+        }
+    }
+
     /// "60% there", floored to tens; nil while the distance still reads 0 %.
     static func percentLabel(_ fraction: Double) -> String? {
         let percent = UnlockOutlook.percent(of: fraction)
