@@ -45,6 +45,12 @@ final class AppModel {
                 state = AppState()
             }
         }
+        refreshUnlock()
+    }
+
+    /// Flags the reveal when the set is already solid under the current pace. Never clears it.
+    func refreshUnlock() {
+        state.progress.refreshPendingUnlock(rule: rule)
     }
 
     /// Persists the current state. Failures are logged; the UI never sees them.

@@ -40,4 +40,31 @@ struct AppModelTests {
     @Test func loggingSubsystemIsTheBundleIdentifier() {
         #expect(LampLog.subsystem == Bundle.main.bundleIdentifier)
     }
+
+    @Test func loadingASolidSaveFlagsTheUnlock() throws {
+        // A build-2 learner: 12 correct K and M in both skills is solid under standard but not strict,
+        // and the reveal never fired because the file was saved before pendingUnlock existed in this shape.
+        var saved = LaunchConfiguration.fixtures["fresh"]!()
+        for _ in 0..<12 {
+            for s in Skill.allCases {
+                saved.progress.log("K", s, correct: true, rule: UnlockPace.strict.rule)
+                saved.progress.log("M", s, correct: true, rule: UnlockPace.strict.rule)
+            }
+        }
+        #expect(!saved.progress.pendingUnlock)             // 12 < 20 under strict
+        let store = MemoryStateStore()
+        try store.save(saved)
+        let m = AppModel(store: store, launch: .init(arguments: []))
+        #expect(m.state.progress.pendingUnlock)             // solid under standard
+    }
+
+    @Test func refreshNeverClearsPending() {
+        let m = AppModel(store: MemoryStateStore(), launch: .init(arguments: ["MorseLamp", "--fixture", "aboutToUnlock"]))
+        m.state.progress.log("M", .keying, correct: true, rule: m.rule)
+        #expect(m.state.progress.pendingUnlock)
+        m.state.settings.pace = .strict
+        m.refreshUnlock()
+        #expect(m.state.progress.pendingUnlock)
+        #expect(m.state.progress.unlockedCount == 2)
+    }
 }

@@ -34,6 +34,10 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(codes.waitForExistence(timeout: 2))
         XCTAssertEqual(codes.value as? String, "off")
 
+        app.buttons["Strict"].tap()
+        XCTAssertTrue(app.buttons["Strict"].isSelected)
+        XCTAssertTrue(app.staticTexts["Each letter seasons for 20 rounds in both skills first."].waitForExistence(timeout: 2))
+
         let reset = app.buttons["Reset progress"]
         XCTAssertTrue(reset.waitForExistence(timeout: 2))
         reset.tap()
@@ -59,6 +63,9 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(strict.waitForExistence(timeout: 5))
         XCTAssertEqual(strict.value as? String, "on")
         XCTAssertTrue(app.buttons["Keyboard"].isSelected)
+        app.swipeUp()
+        XCTAssertTrue(app.buttons["Strict"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Strict"].isSelected)
     }
 
     @MainActor

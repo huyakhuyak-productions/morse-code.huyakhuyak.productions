@@ -11,6 +11,22 @@ nonisolated enum SettingsCopy {
         }
     }
 
+    static func paceLabel(_ pace: UnlockPace) -> String {
+        switch pace {
+        case .relaxed: "Relaxed"
+        case .standard: "Standard"
+        case .strict: "Strict"
+        }
+    }
+
+    static func paceExplanation(_ pace: UnlockPace) -> String {
+        switch pace {
+        case .relaxed: "New letters come quickly. Expect to revisit some."
+        case .standard: "The Koch 90% rule, trimmed for one tap at a time."
+        case .strict: "Each letter seasons for 20 rounds in both skills first."
+        }
+    }
+
     static let speedExplanation = "15 or above trains your ear best"
     static let codesOnLockedExplanation = "Off is how Morse is taught: hear a letter before you see it."
     static let relearnTitle = "Relearn my rhythm?"
@@ -88,6 +104,8 @@ struct SettingsView: View {
                         LampSwitch("Codes on locked letters", explanation: SettingsCopy.codesOnLockedExplanation, isOn: $app.state.settings.codesOnLocked)
                     }
                     group("Progress") {
+                        LampSegmented("Unlock pace", selection: $app.state.settings.pace, label: SettingsCopy.paceLabel)
+                        explanation(SettingsCopy.paceExplanation(app.state.settings.pace))
                         PrimaryButton("Reset progress", role: .destructive) { confirmingReset = true }
                             .accessibilityFocused($focus, equals: .reset)
                     }
@@ -113,6 +131,9 @@ struct SettingsView: View {
             app.haptics.isEnabled = settings.haptics
             app.tone.setPitch(settings.pitchHz)
             app.save()
+        }
+        .onChange(of: app.state.settings.pace) { _, _ in
+            app.refreshUnlock()
         }
         .confirmSheet(
             isPresented: $confirmingRelearn,
