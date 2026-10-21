@@ -66,7 +66,9 @@ per layer, compiled by actool because `ASSETCATALOG_COMPILER_APPICON_NAME` match
 The PNGs are rendered from the SVGs in `design/icon/` by `scripts/render-icon.sh`; never edit them
 by hand. `UIImage(named: "AppIcon")` throws for a layered icon, so `BundleTests` checks the flat
 fallback file that `CFBundleIconFiles` names. A layer whose alpha fades under glass shows a hard
-seam where the glass mask ends, so only the opaque dot has glass on.
+seam where the glass mask ends, so only the opaque dot has glass on. Store screenshots come from
+`scripts/screenshots.sh` at 1206 x 2622: App Store Connect requires the 6.3" set and scales it to
+every other iPhone, and it rejects 1320 x 2868 as "file dimensions are invalid".
 
 ## Release
 

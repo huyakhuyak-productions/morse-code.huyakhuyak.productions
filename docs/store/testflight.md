@@ -37,5 +37,7 @@
       dokku the same day.
 - [x] Build 2 submitted for Beta App Review on 2026-10-20 ("Waiting for Review"); the review
       reads the privacy policy at `https://morse-code.huyakhuyak.productions/privacy`.
+- [x] Beta App Review passed; builds 2 and 3 are Testing in "Friends". Build 4 (2026-10-21)
+      carries swipe back and the codes-on-letters fix.
 - [ ] When the review passes, send friends the public link. Each later `scripts/release.sh`
       upload reaches "Owner" automatically; add it to "Friends" by hand (Builds → +).
