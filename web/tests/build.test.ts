@@ -16,6 +16,38 @@ function pngSize(path: string): [number, number] {
   return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
 }
 
+/** The page's stylesheet, resolved from the link tag the build wrote. */
+function css(page: string): string {
+  const match = html(page).match(/<link rel="stylesheet" href="([^"]+\.css)"/);
+  expect(match, `${page} links no stylesheet`).not.toBeNull();
+  return readFileSync(join(dist, match![1]), "utf8");
+}
+
+/** The stylesheet with every `@layer name { … }` block removed: what the cascade ranks above all layers. */
+function unlayered(stylesheet: string): string {
+  let out = "";
+  let i = 0;
+  while (i < stylesheet.length) {
+    const open = stylesheet.indexOf("@layer ", i);
+    const brace = open < 0 ? -1 : stylesheet.indexOf("{", open);
+    const semicolon = open < 0 ? -1 : stylesheet.indexOf(";", open);
+    if (open < 0 || brace < 0 || (semicolon >= 0 && semicolon < brace)) {
+      out += stylesheet.slice(i, open < 0 ? stylesheet.length : semicolon + 1);
+      i = open < 0 ? stylesheet.length : semicolon + 1;
+      continue;
+    }
+    out += stylesheet.slice(i, open);
+    let depth = 1;
+    let j = brace + 1;
+    for (; j < stylesheet.length && depth > 0; j++) {
+      if (stylesheet[j] === "{") depth++;
+      else if (stylesheet[j] === "}") depth--;
+    }
+    i = j;
+  }
+  return out;
+}
+
 describe("built site", () => {
   test("every page has an og image that exists at 1200x630", () => {
     for (const page of pages) {
@@ -71,5 +103,13 @@ describe("built site", () => {
     for (const heading of ["no sound", "reset", "order", "offline"]) {
       expect(page.toLowerCase()).toMatch(new RegExp(`<h2[^>]*>[^<]*${heading}`));
     }
+  });
+
+  test("the site's own rules sit in cascade layers so utility colours win", () => {
+    // An unlayered `a { color: inherit }` outranks `text-white` in @layer utilities whatever the
+    // order, so the landing button read black on blue in the light theme.
+    const bare = unlayered(css("index.html"));
+    expect(bare).not.toMatch(/(^|[{};,])a\{[^}]*color:/);
+    expect(bare).not.toMatch(/\.prose-lamp/);
   });
 });

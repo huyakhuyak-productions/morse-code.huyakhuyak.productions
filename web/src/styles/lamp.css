@@ -22,56 +22,63 @@
   color-scheme: dark light;
 }
 
-html {
-  background-color: var(--color-bg);
-  color: var(--color-fg);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Everything below sits in a layer. Tailwind's utilities live in `@layer utilities`, and an
+   unlayered rule outranks any layered one whatever the order, so a bare `a { color: inherit }`
+   silenced `text-white` on the landing button (black text on blue in the light theme). */
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100dvh;
+    line-height: 1.5;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  a {
+    color: inherit;
+    text-underline-offset: 0.2em;
+  }
+
+  a,
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
 }
 
-body {
-  min-height: 100dvh;
-  line-height: 1.5;
-  padding-bottom: env(safe-area-inset-bottom);
-}
+@layer components {
+  .prose-lamp h2 {
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
 
-a {
-  color: inherit;
-  text-underline-offset: 0.2em;
-}
+  .prose-lamp p {
+    margin-bottom: 1rem;
+    max-width: 62ch;
+  }
 
-a,
-button {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-h1,
-h2,
-h3 {
-  text-wrap: balance;
-}
-
-:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 3px;
-  border-radius: 2px;
-}
-
-.prose-lamp h2 {
-  font-weight: 600;
-  font-size: 1.25rem;
-  line-height: 1.3;
-  margin-top: 2.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.prose-lamp p {
-  margin-bottom: 1rem;
-  max-width: 62ch;
-}
-
-.prose-lamp a {
-  text-decoration: underline;
+  .prose-lamp a {
+    text-decoration: underline;
+  }
 }
