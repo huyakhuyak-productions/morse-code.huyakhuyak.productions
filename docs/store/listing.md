@@ -54,5 +54,6 @@ No account needed. Launch and tap Key or Listen. Sound requires the volume up; t
 Version 1.0 with build 4 was submitted for App Review on 2026-10-21 with automatic release on
 approval; everything above was entered that day. After approval: point `GET_APP` in
 `web/src/lib/site.ts` at the App Store link and redeploy, and uncomment the `apple-itunes-app`
-meta in `web/src/layouts/Lamp.astro`. Still open in App Store Connect: the Digital Services Act
-trader declaration under App Information (needed for EU availability).
+meta in `web/src/layouts/Lamp.astro`. The Digital Services Act declaration (Business > Agreements)
+is "not a trader", made the same day; it covers the whole developer account and has to change to
+trader, with a verified address, phone and email, before any paid app or in-app purchase.
