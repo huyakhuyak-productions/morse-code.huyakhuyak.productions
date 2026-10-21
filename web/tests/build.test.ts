@@ -28,12 +28,15 @@ function unlayered(stylesheet: string): string {
   let out = "";
   let i = 0;
   while (i < stylesheet.length) {
-    const open = stylesheet.indexOf("@layer ", i);
-    const brace = open < 0 ? -1 : stylesheet.indexOf("{", open);
-    const semicolon = open < 0 ? -1 : stylesheet.indexOf(";", open);
-    if (open < 0 || brace < 0 || (semicolon >= 0 && semicolon < brace)) {
-      out += stylesheet.slice(i, open < 0 ? stylesheet.length : semicolon + 1);
-      i = open < 0 ? stylesheet.length : semicolon + 1;
+    const open = stylesheet.indexOf("@layer", i);
+    if (open < 0) return out + stylesheet.slice(i);
+    const brace = stylesheet.indexOf("{", open);
+    const semicolon = stylesheet.indexOf(";", open);
+    if (brace < 0 && semicolon < 0) throw new Error(`unterminated @layer at ${open}`);
+    if (brace < 0 || (semicolon >= 0 && semicolon < brace)) {
+      // `@layer a, b;` orders layers and holds no rules: keep it.
+      out += stylesheet.slice(i, semicolon + 1);
+      i = semicolon + 1;
       continue;
     }
     out += stylesheet.slice(i, open);
@@ -105,11 +108,21 @@ describe("built site", () => {
     }
   });
 
-  test("the site's own rules sit in cascade layers so utility colours win", () => {
-    // An unlayered `a { color: inherit }` outranks `text-white` in @layer utilities whatever the
-    // order, so the landing button read black on blue in the light theme.
-    const bare = unlayered(css("index.html"));
-    expect(bare).not.toMatch(/(^|[{};,])a\{[^}]*color:/);
-    expect(bare).not.toMatch(/\.prose-lamp/);
+  test("every rule the site writes itself sits in a cascade layer", () => {
+    // An unlayered rule outranks `@layer utilities` whatever the source order, so a bare
+    // `a { color: inherit }` once turned the landing button's text black in the light theme.
+    // Above the layers only the theme's custom properties and the font and property at-rules belong.
+    for (const page of pages) {
+      const bare = unlayered(css(page));
+      expect(bare).toContain(":root{color-scheme:");
+      const rest = bare
+        .replace(/@font-face\{[^}]*\}/g, "")
+        .replace(/@property [^{]+\{[^}]*\}/g, "")
+        .replace(/@media[^{]*\{:root\{[^}]*\}\}/g, "")
+        .replace(/:root\{[^}]*\}/g, "")
+        .replace(/@layer [a-z, ]+;/g, "")
+        .trim();
+      expect(rest, `${page} styles outside the layers: ${rest.slice(0, 200)}`).toBe("");
+    }
   });
 });
