@@ -86,7 +86,10 @@ the owner raises it by hand. The App Store Connect record (id 6824568488) is nam
 `web/` is the site at `https://morse-code.huyakhuyak.productions`: Astro 6 on Bun with Tailwind
 CSS 4 (`@tailwindcss/vite`), `astro-og-canvas` for the og-image and `@astrojs/sitemap`. It wears
 the app's palette as `@theme` tokens in `web/src/styles/lamp.css`, with a `prefers-color-scheme`
-override for light. `web/src/lib/site.ts` holds the constants, including the landing button
+override for light. The stylesheet's own element rules sit in `@layer base` and its `.prose-lamp`
+rules in `@layer components`: an unlayered rule outranks Tailwind's `@layer utilities` whatever the
+order, and a bare `a { color: inherit }` once turned the landing button's text black in light.
+`web/src/lib/site.ts` holds the constants, including the landing button
 `GET_APP` (the TestFlight public link `TESTFLIGHT_URL` until release, then the App Store
 link; never an empty href). In `web/`:
 `bun run dev`, `bun run check`, `bun run test` (builds, then checks `dist/` for the og images,
