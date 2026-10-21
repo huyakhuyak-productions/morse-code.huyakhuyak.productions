@@ -24,19 +24,30 @@ struct SwipeBackTests {
         #expect(!delegate.isBlocked)
     }
 
-    /// Recognisers on the screen's own views wait for the edge swipe; the stack's sibling does not.
+    /// Recognisers on the screen's own views wait for the edge swipe, but only where it could pop:
+    /// never the stack's sibling recogniser, and never while a sheet blocks the swipe.
     @MainActor
-    @Test func otherViewsRecognisersWaitForTheSwipe() {
+    @Test func otherViewsRecognisersWaitForTheSwipeOnlyWhereItCouldPop() throws {
         let delegate = SwipeBackDelegate()
-        let container = UIView()
-        let pop = UIScreenEdgePanGestureRecognizer()
-        container.addGestureRecognizer(pop)
+        let navigation = UINavigationController(rootViewController: UIViewController())
+        navigation.pushViewController(UIViewController(), animated: false)
+        navigation.loadViewIfNeeded()
+        delegate.install(on: navigation)
+        let pop = try #require(navigation.interactivePopGestureRecognizer)
         let sibling = UIPanGestureRecognizer()
-        container.addGestureRecognizer(sibling)
+        navigation.view.addGestureRecognizer(sibling)
+        let screen = UIView()
         let content = UIPanGestureRecognizer()
-        UIView().addGestureRecognizer(content)
+        screen.addGestureRecognizer(content)
         #expect(delegate.gestureRecognizer(pop, shouldBeRequiredToFailBy: content))
         #expect(delegate.gestureRecognizer(pop, shouldBeRequiredToFailBy: sibling) == false)
+        let token = UUID()
+        delegate.block(token)
+        #expect(delegate.gestureRecognizer(pop, shouldBeRequiredToFailBy: content) == false)
+        delegate.unblock(token)
+        navigation.popViewController(animated: false)
+        #expect(delegate.gestureRecognizer(pop, shouldBeRequiredToFailBy: content) == false)
+        withExtendedLifetime(screen) {}
     }
 
     @MainActor

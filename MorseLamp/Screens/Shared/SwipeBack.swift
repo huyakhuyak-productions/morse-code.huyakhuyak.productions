@@ -41,12 +41,13 @@ final class SwipeBackDelegate: NSObject, UIGestureRecognizerDelegate {
         )
     }
 
-    /// Everything on the screens below waits for the edge swipe, as it does under a visible bar.
-    /// Without this, SwiftUI's own touch recogniser (left behind by a dismissed Lamp sheet) claims
-    /// the touch on its first move and the swipe fails for good. The stack's other recogniser on
-    /// the same view is left alone.
+    /// Everything on the screen waits for the edge swipe, as it does under a visible bar, but only
+    /// where the swipe could pop: elsewhere a touch near the edge would wait for nothing. Without
+    /// this, SwiftUI's own touch recogniser (left behind by a dismissed Lamp sheet) claims the touch
+    /// on its first move and the swipe fails for good. The stack's other recogniser on the same
+    /// view is left alone.
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy other: UIGestureRecognizer) -> Bool {
-        other.view !== gestureRecognizer.view
+        other.view !== gestureRecognizer.view && gestureRecognizerShouldBegin(gestureRecognizer)
     }
 }
 

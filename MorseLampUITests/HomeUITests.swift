@@ -58,6 +58,15 @@ final class HomeUITests: XCTestCase {
         XCTAssertFalse(app.otherElements["code"].exists)
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
         XCTAssertTrue(app.buttons["Practice R"].waitForNonExistence(timeout: 2))
+        // The next letter's sheet has neither code nor play ring while the switch is off.
+        let next = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'W, unlocks next'")).firstMatch
+        XCTAssertTrue(next.exists)
+        next.tap()
+        XCTAssertTrue(app.staticTexts["W"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.buttons["lamp"].exists)
+        XCTAssertFalse(app.otherElements["code"].exists)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        XCTAssertTrue(app.staticTexts["W"].waitForNonExistence(timeout: 2))
 
         app.buttons["Settings"].tap()
         let codes = app.switches["Codes on letters"]
@@ -70,6 +79,12 @@ final class HomeUITests: XCTestCase {
         XCTAssertTrue(cell.waitForExistence(timeout: 5))
         cell.tap()
         XCTAssertTrue(app.buttons["Practice R"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.otherElements["code"].exists)
+        XCTAssertTrue(app.buttons["lamp"].exists)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        XCTAssertTrue(app.buttons["Practice R"].waitForNonExistence(timeout: 2))
+        next.tap()
+        XCTAssertTrue(app.staticTexts["W"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.otherElements["code"].exists)
         XCTAssertTrue(app.buttons["lamp"].exists)
     }
