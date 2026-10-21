@@ -43,6 +43,12 @@ system threads (audio render block, haptic engine handlers) must be `@Sendable`.
   pattern. Destructive actions use the custom confirm sheet, never a system alert.
 - The accessibility audit UI test filters Dynamic Type findings on purpose: the spec caps body
   text at xxLarge and keeps glyphs fixed.
+- Hiding the navigation bar disables the stack's left-edge pop gesture. `Screens/Shared/SwipeBack.swift`
+  re-enables it by taking over the recogniser's delegate: `RootView` owns one `SwipeBackDelegate`,
+  every pushed destination installs it, and anything that covers the back chevron must call
+  `blocksSwipeBack` (the Lamp presenter does). The delegate also makes other recognisers wait for
+  the swipe; without that, the touch recogniser SwiftUI leaves behind after a dismissed Lamp sheet
+  claims the touch and the swipe is dead until the next push.
 
 ## Audio
 

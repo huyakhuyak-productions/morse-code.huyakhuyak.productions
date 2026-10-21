@@ -38,6 +38,8 @@ private struct RootView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.colorScheme) private var colorScheme
     @State private var path: [Route] = []
+    /// Lives here so it outlives every pushed screen; see `SwipeBack.swift`.
+    @State private var swipeBack = SwipeBackDelegate()
 
     var body: some View {
         ZStack {
@@ -50,13 +52,17 @@ private struct RootView: View {
                     }
                 }
                 .navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case .keying(let practice): KeyingView(practice: practice, path: $path)
-                    case .listening: ListeningView(path: $path)
-                    case .settings: SettingsView()
+                    Group {
+                        switch route {
+                        case .keying(let practice): KeyingView(practice: practice, path: $path)
+                        case .listening: ListeningView(path: $path)
+                        case .settings: SettingsView()
+                        }
                     }
+                    .swipeBackToPop(swipeBack)
                 }
             }
+            .environment(\.swipeBack, swipeBack)
         }
         .environment(\.palette, Palette.resolve(colorScheme))
         .lampDynamicTypeCap()

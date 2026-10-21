@@ -74,6 +74,8 @@ private struct LampPresenter<Sheet: View>: ViewModifier {
             }
         }
         .animation(.lamp(0.32), value: isPresented)
+        // The scrim covers the back chevron, so the edge swipe must not pop the screen underneath.
+        .blocksSwipeBack(isPresented)
         .onChange(of: isPresented) { _, shown in
             if !shown { onDismiss?() }
         }
