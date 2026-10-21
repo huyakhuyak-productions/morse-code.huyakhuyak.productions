@@ -43,7 +43,7 @@ morse,morse code,learn morse,koch,cw,telegraph,ham radio,dits,dahs,trainer
 - App Privacy: Data Not Collected.
 - Price: free, all territories.
 - Copyright: 2026 Mykola Solodukha.
-- Screenshots: `docs/store/screenshots/1-keying.png` to `5-settings.png` (6.9", 1320 x 2868), in that order.
+- Screenshots: `docs/store/screenshots/1-keying.png` to `5-settings.png` (6.3", 1206 x 2622: the size App Store Connect requires; it scales them to the other iPhones), in that order.
 
 ## Review notes
 

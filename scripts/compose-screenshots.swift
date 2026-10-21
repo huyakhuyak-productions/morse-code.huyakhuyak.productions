@@ -1,6 +1,7 @@
 #!/usr/bin/env swift
-// Composes the App Store screenshots: each raw simulator capture on a black 1320 x 2868
-// canvas with its caption above it in Archivo SemiBold.
+// Composes the App Store screenshots: each raw simulator capture on a black 1206 x 2622
+// canvas (the 6.3" size App Store Connect requires and scales to every other iPhone) with
+// its caption above it in Archivo SemiBold.
 //
 //   swift scripts/compose-screenshots.swift <raw-dir> <out-dir>
 //
@@ -19,13 +20,13 @@ let shots: [(file: String, slug: String, caption: String)] = [
     ("settings", "settings", "Strict timing, your pitch, your hand."),
 ]
 
-let canvasWidth = 1320
-let canvasHeight = 2868
-let captureTop: CGFloat = 520        // points from the top of the canvas
-let captureWidthFraction: CGFloat = 0.80   // 1056 px wide, 2294 px tall: the whole screen fits above the bottom edge
-let cornerRadius: CGFloat = 110
-let captionSize: CGFloat = 88
-let captionMargin: CGFloat = 96
+let canvasWidth = 1206
+let canvasHeight = 2622
+let captureTop: CGFloat = 475        // points from the top of the canvas
+let captureWidthFraction: CGFloat = 0.80   // 965 px wide, 2097 px tall: the whole screen fits above the bottom edge
+let cornerRadius: CGFloat = 100
+let captionSize: CGFloat = 80
+let captionMargin: CGFloat = 88
 let fontPath = "MorseLamp/Resources/Fonts/Archivo-SemiBold.ttf"
 let fontName = "Archivo-SemiBold"
 let webShots: Set<String> = ["keying", "listening", "reveal"]
