@@ -106,7 +106,7 @@ struct SettingsView: View {
                     group("Progress") {
                         LampSegmented("Unlock pace", selection: $app.state.settings.pace, label: SettingsCopy.paceLabel)
                         explanation(SettingsCopy.paceExplanation(app.state.settings.pace))
-                        PrimaryButton("Reset progress", role: .destructive) { confirmingReset = true }
+                        PrimaryButton("Reset progress", role: .mutedDestructive) { confirmingReset = true }
                             .accessibilityFocused($focus, equals: .reset)
                     }
                 }

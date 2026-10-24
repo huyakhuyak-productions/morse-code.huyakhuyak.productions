@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// Full-width, 56 pt, 18 pt radius. Key colours by default, red for destructive, muted for secondary.
+/// Full-width, 56 pt, 18 pt radius. Key colours by default, muted for secondary actions, solid red
+/// for the confirm sheet's destructive button, and muted with red text for a destructive action
+/// that still confirms: it must not read as the screen's main action.
 struct PrimaryButton: View {
     enum Role {
-        case primary, destructive, muted
+        case primary, destructive, mutedDestructive, muted
     }
 
     let title: String
@@ -22,27 +24,28 @@ struct PrimaryButton: View {
         Button(action: action) {
             CrossfadeText(title)
                 .font(LampFont.title(17))
-                .foregroundStyle(foreground)
+                .foregroundStyle(Self.text(for: role, in: palette))
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(background))
+                .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Self.fill(for: role, in: palette)))
                 .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(PressScale())
     }
 
-    private var background: Color {
+    static func fill(for role: Role, in palette: Palette) -> Color {
         switch role {
         case .primary: palette.key
         case .destructive: palette.bad
-        case .muted: palette.muted
+        case .mutedDestructive, .muted: palette.muted
         }
     }
 
-    private var foreground: Color {
+    static func text(for role: Role, in palette: Palette) -> Color {
         switch role {
         case .primary: palette.keyText
         case .destructive: .white
+        case .mutedDestructive: palette.badText
         case .muted: palette.fg
         }
     }

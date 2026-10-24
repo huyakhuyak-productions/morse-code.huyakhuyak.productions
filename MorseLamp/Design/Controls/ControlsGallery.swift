@@ -25,7 +25,7 @@ struct ControlsGallery: View {
                     }
                 }
                 LampSlider("Character speed", value: $wpm, in: 10...30, step: 1) { "\(Int($0)) wpm" }
-                PrimaryButton("Reset progress", role: .destructive) { confirmingReset = true }
+                PrimaryButton("Reset progress", role: .mutedDestructive) { confirmingReset = true }
                 CrossfadeText(resetConfirmed ? "Confirmed" : "Nothing reset")
                     .font(LampFont.body(15))
                     .foregroundStyle(palette.fgDim)

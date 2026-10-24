@@ -14,6 +14,8 @@ struct Palette: Equatable, Sendable {
     let accent: Color
     let accentText: Color
     let bad: Color
+    /// Red for text under 24 pt; `bad` itself is too light on the light muted fill.
+    let badText: Color
     /// Strict timing "almost".
     let warn: Color
     /// Paddle and primary buttons.
@@ -24,7 +26,7 @@ struct Palette: Equatable, Sendable {
         bg: Color(hex: 0x000000), fg: Color(hex: 0xFFFFFF), fgDim: Color(hex: 0x8C8C8C),
         muted: Color(hex: 0x1F1F1F), muted2: Color(hex: 0x3A3A3A),
         accent: Color(hex: 0x3D5BFF), accentText: Color(hex: 0x7D90FF),
-        bad: Color(hex: 0xFF4D3D), warn: Color(hex: 0xFFB020),
+        bad: Color(hex: 0xFF4D3D), badText: Color(hex: 0xFF4D3D), warn: Color(hex: 0xFFB020),
         key: Color(hex: 0xFFFFFF), keyText: Color(hex: 0x000000)
     )
 
@@ -32,7 +34,7 @@ struct Palette: Equatable, Sendable {
         bg: Color(hex: 0xFFFFFF), fg: Color(hex: 0x000000), fgDim: Color(hex: 0x6E6E6E),
         muted: Color(hex: 0xEFEFEF), muted2: Color(hex: 0xD9D9D9),
         accent: Color(hex: 0x1F3BE6), accentText: Color(hex: 0x1A33C4),
-        bad: Color(hex: 0xE5301F), warn: Color(hex: 0xC77700),
+        bad: Color(hex: 0xE5301F), badText: Color(hex: 0xC9281A), warn: Color(hex: 0xC77700),
         key: Color(hex: 0x000000), keyText: Color(hex: 0xFFFFFF)
     )
 

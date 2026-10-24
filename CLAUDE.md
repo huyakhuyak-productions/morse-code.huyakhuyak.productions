@@ -41,6 +41,11 @@ system threads (audio render block, haptic engine handlers) must be `@Sendable`.
   `.accessibilityHidden(true)`, or an unlabeled element stays in the tree.
 - Every text change crossfades (`CrossfadeText`); the only instant text is the live keying
   pattern. Destructive actions use the custom confirm sheet, never a system alert.
+- The solid red `PrimaryButton` (`.destructive`) belongs to the confirm sheet only. A button that
+  opens that sheet keeps the muted weight, or it reads as the screen's CTA: `.muted` for Relearn,
+  `.mutedDestructive` (muted fill, `badText`) for Reset progress. `bad` on `muted` is 3.8:1 in
+  light, under the audit's 4.5:1, which is why `badText` exists. Known gap: the sheet's white on
+  `bad` is 3.3:1 in dark, and the audit test never opens a confirm sheet.
 - The accessibility audit UI test filters Dynamic Type findings on purpose: the spec caps body
   text at xxLarge and keeps glyphs fixed.
 - Hiding the navigation bar disables the stack's left-edge pop gesture. `Screens/Shared/SwipeBack.swift`
