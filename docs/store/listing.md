@@ -69,8 +69,7 @@ them kept in App Review Information > Notes. The attachment there is the screen 
 
 Version 1.0 with build 4 was submitted for App Review on 2026-10-21 with automatic release on
 approval; everything above was entered that day. App Review held it on 2026-10-31 for more
-information; the reply with the recording went in on 2026-11-13 and put it back in review. After approval: point `GET_APP` in
-`web/src/lib/site.ts` at the App Store link and redeploy, and uncomment the `apple-itunes-app`
-meta in `web/src/layouts/Lamp.astro`. The Digital Services Act declaration (Business > Agreements)
+information; the reply with the recording went in on 2026-11-13 and put it back in review. Apple approved it the same night (Ready for Distribution), and `GET_APP`
+in `web/src/lib/site.ts` now points at the App Store page. The Digital Services Act declaration (Business > Agreements)
 is "not a trader", made the same day; it covers the whole developer account and has to change to
 trader, with a verified address, phone and email, before any paid app or in-app purchase.

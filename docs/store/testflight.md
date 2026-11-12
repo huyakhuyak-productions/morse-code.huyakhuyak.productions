@@ -32,9 +32,8 @@
       home-screen styles, the launch colour in light and dark, and that the tone plays with
       the silent switch on.
 - [x] TestFlight → External Testing: group "Friends" with build 2 and the Public Link
-      `https://testflight.apple.com/join/w4vFmtRW` (open to anyone, no tester limit). The link is
-      `TESTFLIGHT_URL` in `web/src/lib/site.ts` and `GET_APP` points at it; the site went live on
-      dokku the same day.
+      `https://testflight.apple.com/join/w4vFmtRW` (open to anyone, no tester limit). The site's
+      button carried it until the 1.0 approval on 2026-11-13; it now points at the App Store page.
 - [x] Build 2 submitted for Beta App Review on 2026-10-20 ("Waiting for Review"); the review
       reads the privacy policy at `https://morse-code.huyakhuyak.productions/privacy`.
 - [x] Beta App Review passed; builds 2 and 3 are Testing in "Friends". Build 4 (2026-10-21)

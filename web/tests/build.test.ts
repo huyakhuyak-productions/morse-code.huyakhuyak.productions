@@ -69,10 +69,10 @@ describe("built site", () => {
     expect(html("index.html")).toContain(GET_APP.label);
   });
 
-  test("landing button joins the TestFlight beta", () => {
+  test("landing button opens the App Store page", () => {
     expect(GET_APP).toEqual({
-      label: "Join the TestFlight",
-      href: "https://testflight.apple.com/join/w4vFmtRW",
+      label: "Get it on the App Store",
+      href: "https://apps.apple.com/us/app/morse-lamp-learn-morse-code/id6824568488",
     });
   });
 

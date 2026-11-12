@@ -97,8 +97,7 @@ override for light. The stylesheet's own element rules sit in `@layer base` and 
 rules in `@layer components`: an unlayered rule outranks Tailwind's `@layer utilities` whatever the
 order, and a bare `a { color: inherit }` once turned the landing button's text black in light.
 `web/src/lib/site.ts` holds the constants, including the landing button
-`GET_APP` (the TestFlight public link `TESTFLIGHT_URL` until release, then the App Store
-link; never an empty href). In `web/`:
+`GET_APP` (the App Store page since the 1.0 approval on 2026-11-13; never an empty href). In `web/`:
 `bun run dev`, `bun run check`, `bun run test` (builds, then checks `dist/` for the og images,
 the button link and the contact address). The icon copies in `web/public` and `web/src/assets`
 come from `scripts/render-icon.sh`, the screenshots from `scripts/compose-screenshots.swift`;
