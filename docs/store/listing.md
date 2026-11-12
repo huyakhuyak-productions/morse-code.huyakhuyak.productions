@@ -47,12 +47,29 @@ morse,morse code,learn morse,koch,cw,telegraph,ham radio,dits,dahs,trainer
 
 ## Review notes
 
-No account needed. Launch and tap Key or Listen. Sound requires the volume up; the lamp and haptics work without it.
+App Review asked for these six answers on 2026-10-31 (Guideline 2.1, Information Needed) and wants
+them kept in App Review Information > Notes. The attachment there is the screen recording made with
+`MorseLampUITests/DemoRecordingUITests.swift`.
+
+```text
+1. Screen recording attached. It starts at launch and shows keying, listening and Settings. The app has no accounts, no user content and no paid features.
+
+2. Morse Lamp teaches Morse code in short sessions. It's for ham radio operators and anyone else who wants to learn Morse. You start with two letters and unlock more as you get them right, up to all letters and digits. You key letters on a big paddle, or hear a tone, watch a lamp and name the letter.
+
+3. No setup or login. Open the app and tap Key or Listen.
+
+4. No external services. The app never goes online and keeps all progress on the device.
+
+5. No regional differences. It works the same everywhere.
+
+6. Not a regulated industry and no third-party material. Morse code is a public standard, and all art, sound and code are mine.
+```
 
 ## Submission
 
 Version 1.0 with build 4 was submitted for App Review on 2026-10-21 with automatic release on
-approval; everything above was entered that day. After approval: point `GET_APP` in
+approval; everything above was entered that day. App Review held it on 2026-10-31 for more
+information; the reply with the recording went in on 2026-11-13 and put it back in review. After approval: point `GET_APP` in
 `web/src/lib/site.ts` at the App Store link and redeploy, and uncomment the `apple-itunes-app`
 meta in `web/src/layouts/Lamp.astro`. The Digital Services Act declaration (Business > Agreements)
 is "not a trader", made the same day; it covers the whole developer account and has to change to
